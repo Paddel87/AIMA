@@ -65,7 +65,68 @@ Dieses Dokument spezifiziert den Checkpoint-Mechanismus für das AIMA-System, de
         /model_state.pb.gz
   ```
 
-## 4. Wiederaufnahmeprozess
+## 4. Atomizität und Validierung von Checkpoints
+
+Ein Checkpoint ist nur dann nützlich, wenn er vollständig und konsistent ist. Ein Systemabsturz während des Schreibvorgangs könnte zu einem korrupten, unbrauchbaren Checkpoint führen. Daher sind Mechanismen zur Sicherstellung der Atomizität und zur Validierung unerlässlich.
+
+### 4.1 Atomares Schreiben von Checkpoints
+
+Um zu verhindern, dass ein nur teilweise geschriebener Checkpoint als gültig angesehen wird, wird ein "Write-Rename"-Verfahren angewendet:
+
+1.  **Temporäres Verzeichnis erstellen:** Alle Daten für einen neuen Checkpoint (z.B. `cp_12346`) werden in ein temporäres Verzeichnis geschrieben (z.B. `/checkpoints/{job_id}/tmp_cp_12346/`).
+2.  **Daten schreiben:** Alle zugehörigen Dateien (`state.json`, `results.pb.gz` etc.) werden in dieses temporäre Verzeichnis geschrieben.
+3.  **Validierungs-Hash erstellen:** Nach dem Schreiben aller Dateien wird eine Prüfsumme (z.B. SHA256) über die Inhalte der Checkpoint-Dateien berechnet und in einer separaten `manifest.sha256`-Datei im selben temporären Verzeichnis gespeichert.
+4.  **Atomares Umbenennen:** Erst wenn alle Schritte erfolgreich waren, wird das temporäre Verzeichnis atomar in seinen endgültigen Namen umbenannt (z.B. von `tmp_cp_12346` zu `cp_12346`). Diese Umbenennungsoperation ist auf den meisten Dateisystemen eine atomare Aktion.
+
+### 4.2 Checkpoint-Validierung bei der Wiederaufnahme
+
+Bevor ein Job von einem Checkpoint wiederhergestellt wird, muss dieser validiert werden:
+
+1.  **Manifest-Prüfung:** Das System prüft, ob eine `manifest.sha256`-Datei im Checkpoint-Verzeichnis existiert. Fehlt sie, gilt der Checkpoint als ungültig.
+2.  **Prüfsummen-Vergleich:** Das System berechnet die Prüfsummen der vorhandenen Datendateien neu und vergleicht sie mit den in der Manifest-Datei gespeicherten Werten. Stimmen sie nicht überein, ist der Checkpoint korrupt und wird ignoriert.
+
+### 4.3 Management des "letzten gültigen Checkpoints"
+
+Der `CheckpointManager` speichert nicht nur den Verweis auf den *letzten erstellten* Checkpoint, sondern auf den *letzten erfolgreich validierten* Checkpoint. Die `metadata.json` im Hauptverzeichnis des Jobs wird aktualisiert, um auf den neuesten, als gültig bestätigten Checkpoint zu verweisen. Dies stellt sicher, dass der Wiederaufnahmeprozess immer bei einem bekannten, guten Zustand beginnt.
+
+```diff
+--- a/Implementierungsdetails
++++ b/Implementierungsdetails
+ class CheckpointManager:
+     def create_checkpoint(self, analysis_state, results, model_states):
+         """Erstellt einen neuen Checkpoint atomar."""
+         checkpoint_id = f"cp_{int(time.time())}"
++        temp_dir = f"{self.checkpoint_path}/tmp_{checkpoint_id}"
++        final_dir = f"{self.checkpoint_path}/{checkpoint_id}"
+         
+         # Speichere Daten in temporäres Verzeichnis
+-        self._save_file(f"{checkpoint_id}/state.json", state_json)
++        self._save_file(f"{temp_dir}/state.json", state_json)
+         # ... weitere Speicheroperationen ...
+ 
++        # Erstelle und speichere Manifest
++        manifest = self._create_manifest(temp_dir)
++        self._save_file(f"{temp_dir}/manifest.sha256", manifest)
++
++        # Atomares Umbenennen
++        os.rename(temp_dir, final_dir)
++
+         # Aktualisiere Checkpoint-Historie
+         self.checkpoint_history.append(checkpoint_id)
+         self.current_checkpoint = checkpoint_id
+         # ...
+ 
+     def restore_from_checkpoint(self, checkpoint_id=None):
+         """Stellt den Zustand aus einem validierten Checkpoint wieder her."""
+         # ...
++        if not self._validate_checkpoint(checkpoint_dir):
++            # Versuche älteren, gültigen Checkpoint
++            raise CheckpointValidationError(f"Checkpoint {checkpoint_id} is corrupt.")
+         # ...
+
+```
+
+## 5. Wiederaufnahmeprozess
 
 ### 4.1 Fehlererkennungsmechanismus
 - **Heartbeat-System**: Regelmäßige Statusmeldungen (alle 30 Sekunden)

@@ -119,17 +119,11 @@ Die Systemfähigkeiten beschreiben die funktionalen und nicht-funktionalen Anfor
 - Nicht-funktionale Anforderungen (GPU-Orchestrierung, Leistung, ML-Modellgenauigkeit)
 - Implementierungsplan
 
-## 6. Bekannte Unklarheiten
+## 6. Bekannte Unklarheiten (Archiviert)
 
-Dieses Dokument sammelt bekannte Unklarheiten in der Systemspezifikation und schlägt Klärungen vor.
+Dieses Dokument sammelte ursprünglich bekannte Unklarheiten in der Systemspezifikation. Alle Punkte wurden geklärt und die entsprechenden Konzepte in die jeweiligen Fachdokumente integriert. Das ursprüngliche Dokument wurde archiviert.
 
-**Detaillierte Dokumentation:** [Unklarheiten und Klärungsbedarf](System/UNKLARHEITEN.md)
-
-**Hauptkategorien:**
-- Schnittstellen zwischen Workflow und GPU-Orchestrierung
-- Technische Details
-- Benutzerinteraktion
-- Weitere Überlegungen
+**Archiviertes Dokument:** [Unklarheiten und Klärungsbedarf](System/Archiv/UNKLARHEITEN.md)
 
 ## 7. Fehlende Teilbereiche und Konzeptvorschläge
 
@@ -223,7 +217,8 @@ Dokumentation/
 └── System/
     ├── MEDIENWORKFLOW.md                   # Medienanalyse-Workflow
     ├── SYSTEMFAEHIGKEITEN.md               # Systemfähigkeiten
-    ├── UNKLARHEITEN.md                     # Unklarheiten und Klärungsbedarf
+    ├── Archiv/
+    │   └── UNKLARHEITEN.md                 # Archivierte Unklarheiten
     ├── FEHLENDE_TEILBEREICHE.md            # Fehlende Teilbereiche und Konzeptvorschläge
     ├── ANWENDUNGSSZENARIO_BENUTZER.md      # Anwendungsszenario aus Benutzersicht
     ├── DATENSPEICHERUNG_UND_FUSION.md      # Datenspeicherung und Fusion

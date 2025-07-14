@@ -1,4 +1,7 @@
-# Fehlende Teilbereiche und Konzeptvorschläge
+# Fehlende Teilbereiche und Konzeptvorschläge (OBSOLET)
+
+**Dieses Dokument ist obsolet. Die hier skizzierten Konzepte wurden in spezifischeren und detaillierteren Dokumenten ausgearbeitet und ersetzt.**
+
 
 Dieses Dokument beschreibt Teilbereiche des AIMA-Systems, die in der bisherigen Dokumentation noch nicht oder nicht ausreichend behandelt wurden, und präsentiert unverbindliche Konzeptvorschläge für deren Implementierung.
 

@@ -49,7 +49,36 @@ Das AIMA-System verwendet eine mehrschichtige Datenbankstrategie, die verschiede
 - Unterstützung für komplexe Abfragen und Aggregationen
 - Horizontale Skalierbarkeit durch Sharding
 
-#### Vektordatenbank (Milvus/FAISS)
+#### Vektordatenbank (Milvus)
+
+**Primäre Verwendung:**
+- Speicherung von Einbettungsvektoren aus ML-Modellen
+- Ähnlichkeitssuche für Gesichter, Objekte, Audiomerkmale
+- Multimodale Abfragen über verschiedene Medientypen hinweg
+
+**Vorteile für AIMA:**
+- Optimiert für hochdimensionale Vektoroperationen
+- Effiziente Ähnlichkeitssuche (k-NN, ANN)
+- Skalierbarkeit für Millionen von Vektoren
+- Integration mit ML-Frameworks
+
+### 2.3 Versionierung von Vektor-Indizes
+
+Wenn ML-Modelle aktualisiert werden, ändern sich die von ihnen erzeugten Vektor-Embeddings. Dies macht einen direkten Vergleich zwischen Vektoren, die von unterschiedlichen Modellversionen generiert wurden, unmöglich. Um dieses Problem ohne Systemausfall zu lösen, wird eine Strategie der parallelen Indizes und schrittweisen Migration verfolgt.
+
+**Konzept:**
+
+1.  **Versionierte Collections:** Anstatt einer einzigen Collection für einen Embedding-Typ (z.B. `face_embeddings`) wird für jede signifikante Modellversion eine neue Collection in Milvus angelegt (z.B. `face_embeddings_v1`, `face_embeddings_v2`).
+
+2.  **Dual Writing & Hintergrund-Migration:**
+    - Bei der Einführung eines neuen Modells (`v2`) werden alle **neuen** Medien mit diesem Modell verarbeitet und die Ergebnisse in die neue Collection (`..._v2`) geschrieben.
+    - Ein **Hintergrundprozess** mit niedriger Priorität durchläuft die alten Daten, berechnet die `v2`-Embeddings neu und füllt die `..._v2`-Collection auf.
+
+3.  **Intelligente Abfragestrategie:** Die Anwendungsschicht (API-Gateway) leitet Abfragen an die entsprechenden Collections weiter:
+    - Für neue Suchen wird primär die `..._v2`-Collection verwendet.
+    - Für umfassende historische Suchen können beide Collections abgefragt und die Ergebnisse fusioniert werden, bis die Migration abgeschlossen ist.
+
+4.  **Außerbetriebnahme:** Sobald die Migration vollständig ist, wird der gesamte Lese- und Schreibverkehr auf die neue Collection umgeleitet. Die alte Collection (`..._v1`) kann dann archiviert und gelöscht werden.
 
 **Primäre Verwendung:**
 - Speicherung von Einbettungsvektoren aus ML-Modellen
@@ -76,9 +105,34 @@ Das AIMA-System verwendet eine mehrschichtige Datenbankstrategie, die verschiede
 - Versionierung und Lebenszyklusmanagement
 - Kompatibilität mit Cloud-Speicherdiensten
 
-## 2. Datenbankschema und Datenmodellierung
+## 2. Cross-Database-Referenzen und Datenintegrität
 
-### 2.1 Dokumentendatenbank-Schema
+### 2.1 Prinzip der Globalen Eindeutigen ID (GUID)
+
+In einer verteilten Architektur mit heterogenen Datenbanksystemen können keine datenbankübergreifenden Fremdschlüssel oder JOINs verwendet werden. Um die referentielle Integrität auf der Anwendungsebene sicherzustellen, wird das Prinzip der **Globalen Eindeutigen ID (GUID)** angewendet.
+
+**Konzept:**
+
+1.  **Zentrale ID-Vergabe:** Für jede primäre Entität (z.B. ein Medien-Item) wird bei der Erstellung eine einzige, global eindeutige ID (z.B. eine `UUID`) generiert. Diese Aufgabe übernimmt in der Regel der `Workflow-Manager` oder ein dedizierter ID-Service.
+
+2.  **Konsistente Referenzierung:** Diese GUID wird als Referenzschlüssel in allen zugehörigen Datensätzen über alle Datenbanken hinweg gespeichert.
+
+**Beispiel: `media_id`**
+
+-   **Objektspeicher (MinIO/S3):** Das Medienobjekt selbst kann unter einem Pfad gespeichert werden, der die `media_id` enthält (z.B. `bucket/media_id/original.mp4`).
+-   **MongoDB (`media_items` Collection):** Ein Dokument wird mit der `media_id` als primärem Anwendungs-Schlüssel angelegt.
+-   **MongoDB (`analysis_results` Collection):** Jedes Analyseergebnis, das sich auf dieses Medium bezieht, enthält ein Feld `media_id`.
+-   **Milvus:** Jeder Vektor, der aus diesem Medium extrahiert wird, erhält die `media_id` als Metadaten-Tag.
+
+### 2.2 Abfrage-Muster
+
+Um ein vollständiges Bild einer Entität zu erhalten, führt die Anwendungsschicht (z.B. der API-Gateway) parallele Abfragen an die beteiligten Datenbanken durch, die alle dieselbe GUID verwenden. Die Ergebnisse werden anschließend in der Anwendung zu einem einzigen Datenübertragungsobjekt (DTO) zusammengefügt.
+
+Dieses Muster stellt sicher, dass die Daten lose gekoppelt bleiben und jeder Microservice nur seine eigene Domäne und Datenbank kennen muss, während die Beziehungen zwischen den Daten auf der Anwendungsebene klar definiert und abfragbar sind.
+
+## 4. Datenbankschema und Datenmodellierung
+
+### 3.1 Dokumentendatenbank-Schema
 
 #### Sammlungen (Collections)
 

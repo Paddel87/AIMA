@@ -108,7 +108,61 @@ class PredictiveScalingEnsemble:
                 self.model_performance[model.name]['mape'].append(mape)
 ```
 
-## 3. Eingabeparameter
+## 3. Architektur des Skalierungssystems
+
+Die prädiktive Skalierung wird durch ein dediziertes Subsystem realisiert, das aus mehreren interagierenden Komponenten besteht. Dieses System läuft parallel zur eigentlichen AIMA-Anwendung und steuert deren Ressourcen.
+
+```mermaid
+graph TD
+    subgraph Infrastruktur
+        A[Kubernetes Cluster / Cloud-Provider]
+    end
+
+    subgraph AIMA-System
+        B[Microservice 1]
+        C[Microservice 2]
+        D[Message Queue]
+    end
+
+    subgraph Prädiktives Skalierungssystem
+        E[Metrik-Sammler] -- Rohdaten --> F[Daten-Aggregator & Speicher]
+        F -- Aufbereitete Zeitreihen --> G[Vorhersage-Engine]
+        G -- Skalierungs-Vorhersage --> H[Skalierungs-Aktor]
+        H -- Skalierungs-Befehle --> A
+        A -- Tatsächliche Metriken --> E
+        G -- Vorhersage --> I{Feedback-Schleife}
+        F -- Tatsächliche Last --> I
+        I -- Modell-Performance --> G
+    end
+
+    B -- Metriken --> E
+    C -- Metriken --> E
+    D -- Metriken --> E
+```
+
+### 3.1 Komponenten
+
+1.  **Metrik-Sammler (Metric Collector):**
+    *   **Aufgabe:** Sammelt kontinuierlich Rohmetriken von allen relevanten Quellen (AIMA-Microservices, Kubernetes, Message Queues, Datenbanken).
+    *   **Technologien:** Prometheus Exporter, Telegraf, Cloud-Provider-spezifische Agenten.
+
+2.  **Daten-Aggregator & Speicher (Data Aggregator & Storage):**
+    *   **Aufgabe:** Empfängt die Rohdaten, aggregiert sie in sinnvolle Zeitintervalle (z.B. pro Minute) und speichert sie effizient für die Analyse.
+    *   **Technologien:** Prometheus oder InfluxDB als Zeitreihendatenbank (Time-Series Database, TSDB).
+
+3.  **Vorhersage-Engine (Prediction Engine):**
+    *   **Aufgabe:** Das Herzstück des Systems. Greift auf die historischen Daten im Speicher zu, trainiert die unter Abschnitt 2 beschriebenen Modelle (ARIMA, LSTM etc.) und generiert regelmäßig Vorhersagen für den zukünftigen Ressourcenbedarf.
+    *   **Implementierung:** Ein separater Service, der in Python mit Bibliotheken wie `scikit-learn`, `statsmodels`, `tensorflow/pytorch` und `xgboost` implementiert ist.
+
+4.  **Skalierungs-Aktor (Scaling Actuator):**
+    *   **Aufgabe:** Nimmt die Vorhersagen der Engine entgegen (z.B. "Benötigt in 15 Minuten 5 Instanzen des Gesichtserkennungs-Service") und übersetzt sie in konkrete Aktionen auf der Infrastrukturebene.
+    *   **Implementierung:** Interagiert direkt mit der Kubernetes-API, um die `replicas`-Anzahl von Deployments anzupassen, oder mit Cloud-Provider-APIs, um VM-basierte Worker-Gruppen zu skalieren.
+
+5.  **Feedback-Schleife (Feedback Loop):**
+    *   **Aufgabe:** Vergleicht die von der Engine gemachten Vorhersagen mit den später tatsächlich eingetretenen Metriken. Berechnet die Performance der Vorhersagemodelle (z.B. mittels RMSE, MAE) und stellt diese Information der Engine zur Verfügung, um die Modelle (insbesondere die Gewichte im Ensemble-Modell) kontinuierlich zu verbessern.
+    *   **Implementierung:** Ein Batch-Job oder ein Stream-Prozessor, der die Vorhersagen mit den tatsächlichen Werten aus der TSDB abgleicht.
+
+## 4. Eingabeparameter
 
 ### 3.1 Historische Nutzungsdaten
 
