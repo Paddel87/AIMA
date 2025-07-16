@@ -21,4 +21,5 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/) 
     - `CIRCUIT_BREAKER_KONZEPT.md`: Implementierung des Circuit Breaker Patterns.
     - `PRAEDIKTIVE_SKALIERUNG.md`: Konzept zur prädiktiven Skalierung von Ressourcen.
     - `CHECKPOINT_MECHANISMUS.md`: Mechanismus zur Sicherung langlaufender Prozesse.
+    - `UMSETZUNGSKONZEPT.md`: Detaillierter, iterativer Plan für die Implementierung des AIMA-Systems, inklusive des Grundprinzips der autonomen, dokumentenbasierten Arbeitsweise der KI.
   - Archivierung initialer Brainstorming- und Unklarheiten-Dokumente (`UNKLARHEITEN.md`, `FEHLENDE_TEILBEREICHE.md`).
