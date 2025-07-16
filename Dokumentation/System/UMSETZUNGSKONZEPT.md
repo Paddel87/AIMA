@@ -2,6 +2,14 @@
 
 Dieses Dokument beschreibt den iterativen Umsetzungsplan für die Entwicklung des AIMA-Systems. Der Plan gliedert sich in Phasen, die aufeinander aufbauen und eine schrittweise Implementierung und Inbetriebnahme der Systemkomponenten ermöglichen.
 
+## Grundprinzipien
+
+Ein zentrales und unabdingbares Prinzip für die erfolgreiche Umsetzung dieses Konzepts ist die **autonome Arbeitsweise der entwickelnden KI**. Das bedeutet:
+
+*   **Eigenständige Informationsbeschaffung:** Die KI muss proaktiv und eigenständig auf **alle** im System vorhandenen Dokumente (Architekturentwürfe, Konzepte, Schnittstellenbeschreibungen etc.) zurückgreifen, um eine funktionsfähige und kohärente Software zu erstellen.
+*   **Vorausschauende Planung:** Da keine menschliche Hilfe zur Klärung von Unklarheiten oder zur Korrektur von Fehlinterpretationen zur Verfügung steht, ist ein vorausschauendes und antizipierendes Vorgehen elementar. Die KI muss potenzielle Integrationsprobleme, Abhängigkeiten und logische Lücken frühzeitig erkennen und selbstständig Lösungen erarbeiten.
+*   **Implizites Wissen nutzen:** Die Gesamtheit der Dokumentation bildet den "Wissensschatz" des Projekts. Die KI muss in der Lage sein, nicht nur explizite Anweisungen, sondern auch implizite Zusammenhänge und Architekturentscheidungen aus den Dokumenten abzuleiten und in der Implementierung zu berücksichtigen.
+
 ## Phase 1: Kerninfrastruktur und Basisfunktionen
 
 **Ziel:** Schaffung einer soliden Grundlage für das System, einschließlich der grundlegenden Infrastruktur und der wichtigsten Verwaltungsmodule.
