@@ -21,9 +21,14 @@ Dieser Entwurf beschreibt die modulare Architektur des AIMA-Systems (AI Media An
 - **API Gateway**: Kong oder Traefik
 - **Monitoring**: Prometheus + Grafana
 
-## 2. Core-Module (Kernmodule)
+## 2. Überarbeitete Modul-Architektur
 
-### 2.1 API Gateway Module
+Basierend auf einer umfassenden Analyse der Systemanforderungen wird die folgende, konsolidierte Modulstruktur vorgeschlagen. Sie reduziert die Komplexität durch die Zusammenfassung eng gekoppelter Funktionalitäten, ohne die Flexibilität der Microservice-Architektur zu beeinträchtigen.
+
+### 2.1 Core Infrastructure Modules (Kerninfrastruktur)
+
+
+#### 2.1.1 API Gateway Module
 **Zweck**: Zentraler Eingangs- und Routing-Punkt für alle API-Anfragen
 
 **Verantwortlichkeiten**:
@@ -44,7 +49,7 @@ Dieser Entwurf beschreibt die modulare Architektur des AIMA-Systems (AI Media An
 - Eingehend: HTTP/HTTPS Requests von Frontend und externen Clients
 - Ausgehend: Routed Requests an Backend-Services
 
-### 2.2 User Management Module
+#### 2.1.2 User Management Module
 **Zweck**: Verwaltung von Benutzern, Rollen und Berechtigungen
 
 **Verantwortlichkeiten**:
@@ -64,7 +69,7 @@ Dieser Entwurf beschreibt die modulare Architektur des AIMA-Systems (AI Media An
 - REST API für Benutzeroperationen
 - Events: user_created, user_updated, user_deleted
 
-### 2.3 Configuration Management Module
+#### 2.1.3 Configuration Management Module
 **Zweck**: Zentrale Verwaltung aller Systemkonfigurationen
 
 **Verantwortlichkeiten**:
@@ -83,72 +88,45 @@ Dieser Entwurf beschreibt die modulare Architektur des AIMA-Systems (AI Media An
 - REST API für Konfigurationsmanagement
 - Events: config_updated
 
-## 3. Media Processing Module (Medienverarbeitung)
+### 2.2 Media & Data Layer Modules (Medien- und Datenschicht)
 
-### 3.1 Media Ingestion Module
-**Zweck**: Aufnahme und Vorverarbeitung von Mediendateien
-
-**Verantwortlichkeiten**:
-- Medienupload und -validierung
-- Formatkonvertierung und -optimierung
-- Metadatenextraktion
-- Duplikaterkennung
-- Virus-/Malware-Scanning
-- Staging für weitere Verarbeitung
-
-**Technische Spezifikation**:
-- FFmpeg für Medienverarbeitung
-- MinIO oder AWS S3 für Objektspeicherung
-- PostgreSQL für Metadaten
-- ClamAV für Virus-Scanning
-
-**Schnittstellen**:
-- REST API für Upload
-- WebSocket für Upload-Progress
-- Events: media_uploaded, media_validated, media_rejected
-
-### 3.2 Media Storage Module
-**Zweck**: Sichere Speicherung und Verwaltung von Mediendateien
+#### 2.2.1 Media Lifecycle Management Module
+**Zweck**: Umfassende Verwaltung des gesamten Lebenszyklus von Mediendateien, von der Aufnahme bis zur Archivierung und Löschung.
 
 **Verantwortlichkeiten**:
-- Verschlüsselte Speicherung von Mediendateien
-- Lifecycle Management (Archivierung, Löschung)
-- Backup und Disaster Recovery
-- Zugriffskontrolle auf Dateiebene
-- Speicheroptimierung und Komprimierung
+- **Ingestion**: Medienupload, Validierung, Formatkonvertierung, Metadatenextraktion, Virenscan.
+- **Storage**: Sichere, verschlüsselte Speicherung in Objektspeichern (MinIO/S3), Lifecycle Management (Tiering, Archivierung), Backup und Recovery.
+- **Transfer**: Sichere und effiziente Übertragung von Mediendaten zu den Analyse-Instanzen, inklusive Bandbreitenmanagement und Fehlerbehandlung.
 
 **Technische Spezifikation**:
-- MinIO oder AWS S3 mit Verschlüsselung
-- Automatische Tiering (Hot/Cold Storage)
-- Checksummen für Integrität
-- Replikation für Hochverfügbarkeit
+- FFmpeg, MinIO/S3, ClamAV, rsync.
+- TLS 1.3 für sichere Übertragung.
 
 **Schnittstellen**:
-- REST API für Dateizugriff
-- Events: file_stored, file_archived, file_deleted
+- REST API für Upload und Dateimanagement.
+- WebSocket für Fortschrittsanzeigen.
+- Events: `media_uploaded`, `media_validated`, `media_stored`, `transfer_completed`, `media_deleted`.
 
-### 3.3 Media Transfer Module
-**Zweck**: Sichere Übertragung von Medien zu GPU-Instanzen
+#### 2.2.2 Data Abstraction & Persistence Module
+**Zweck**: Bereitstellung einer einheitlichen Schnittstelle für den Zugriff auf die heterogene Datenbanklandschaft und Sicherstellung der Datenkonsistenz.
 
 **Verantwortlichkeiten**:
-- Verschlüsselte Datenübertragung
-- Bandbreitenmanagement
-- Retry-Mechanismen bei Übertragungsfehlern
-- Fortschrittsüberwachung
-- Automatische Bereinigung nach Analyse
+- Abstraktion des Zugriffs auf PostgreSQL (relationale Daten), MongoDB (Dokumente, Analyseergebnisse) und Milvus (Vektor-Embeddings).
+- Verwaltung von Cross-Database-Referenzen mittels globaler IDs (GUIDs).
+- Implementierung von Caching-Strategien zur Leistungsoptimierung.
+- Sicherstellung der transaktionalen Integrität auf Anwendungsebene (z.B. mittels Saga-Pattern).
 
 **Technische Spezifikation**:
-- TLS 1.3 für Verschlüsselung
-- Chunked Transfer für große Dateien
-- rsync oder ähnliche Tools für effiziente Übertragung
+- PostgreSQL, MongoDB, Milvus/Pinecone.
+- Redis für Caching.
 
 **Schnittstellen**:
-- REST API für Übertragungssteuerung
-- Events: transfer_started, transfer_completed, transfer_failed
+- Interne GraphQL- oder REST-API für Datenabfragen und -manipulationen.
+- Events zur Signalisierung von Datenänderungen.
 
-## 4. Analysis Engine Module (Analyse-Engine)
+### 2.3 Analysis & Fusion Modules (Analyse und Fusion)
 
-### 4.1 Job Management Module
+#### 2.3.1 Job Management Module
 **Zweck**: Verwaltung und Orchestrierung von Analysejobs
 
 **Verantwortlichkeiten**:
@@ -169,7 +147,7 @@ Dieser Entwurf beschreibt die modulare Architektur des AIMA-Systems (AI Media An
 - REST API für Job-Operations
 - Events: job_created, job_started, job_completed, job_failed
 
-### 4.2 GPU Orchestration Module
+#### 2.3.2 GPU Orchestration Module
 **Zweck**: Verwaltung und Orchestrierung von GPU-Ressourcen
 
 **Verantwortlichkeiten**:
@@ -190,7 +168,52 @@ Dieser Entwurf beschreibt die modulare Architektur des AIMA-Systems (AI Media An
 - REST API für Ressourcenmanagement
 - Events: instance_created, instance_ready, instance_terminated
 
-### 4.3 Model Management Module
+#### 2.3.3 Model Management Module
+**Zweck**: Verwaltung von ML/AI-Modellen
+
+**Verantwortlichkeiten**:
+- Modell-Repository und -Versionierung
+- Modell-Deployment und -Updates
+- A/B-Testing von Modellversionen
+- Modell-Performance-Monitoring
+
+#### 2.3.4 Analysis Execution Module
+**Zweck**: Ausführung der spezifischen Analyse-Pipelines für verschiedene Medientypen.
+
+**Verantwortlichkeiten**:
+- Implementierung der in `PIPELINE_KONZEPT.md` beschriebenen Verarbeitungslogik.
+- Ausführung der spezialisierten Pipelines für:
+  - **Video-Analyse**: Objekt-, Personen-, Szenenerkennung.
+  - **Audio-Analyse**: Transkription, Sprecherdiarisierung, Emotionserkennung.
+  - **Bild-Analyse**: Detaillierte statische Bildauswertung.
+- Skalierung der Analyse-Worker je nach Last.
+
+**Technische Spezifikation**:
+- Python-basierte Worker (z.B. mit Celery).
+- Nutzung der jeweiligen KI-Modelle (z.B. Whisper, LLaVA, RetinaFace).
+
+**Schnittstellen**:
+- Kommuniziert mit dem `Job Management Module` zur Aufgabenübernahme.
+- Nutzt das `Data Abstraction & Persistence Module` zur Speicherung der Ergebnisse.
+- Events: `analysis_step_completed`, `analysis_pipeline_finished`.
+
+#### 2.3.5 Data Fusion Module (LLM)
+**Zweck**: Intelligente Zusammenführung der Ergebnisse aus den verschiedenen Analyse-Pipelines zu einem kohärenten, verständlichen Dossier.
+
+**Verantwortlichkeiten**:
+- Sammeln der Roh-Ergebnisse aus der `analysis_results` Collection.
+- Anwendung eines übergeordneten Large Language Models (LLM), um die Daten zu kontextualisieren, zu korrelieren und zusammenzufassen.
+- Erstellung eines finalen, narrativen Analyseberichts (Dossier).
+- Identifikation von Widersprüchen oder Unsicherheiten in den Analyseergebnissen.
+
+**Technische Spezifikation**:
+- Llama 3.1 oder ähnliches leistungsfähiges LLM.
+- Prompt-Engineering-Framework zur Steuerung der Fusion.
+
+**Schnittstellen**:
+- Liest Ergebnisse aus dem `Data Abstraction & Persistence Module`.
+- Schreibt das finale Dossier zurück in die Datenbank.
+- Events: `fusion_completed`, `dossier_ready`.
 **Zweck**: Verwaltung von ML/AI-Modellen
 
 **Verantwortlichkeiten**:
