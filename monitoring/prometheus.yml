@@ -1,0 +1,88 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus selbst
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # AIMA Services
+  - job_name: 'aima-user-management'
+    static_configs:
+      - targets: ['user-management:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'aima-media-lifecycle'
+    static_configs:
+      - targets: ['media-lifecycle:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'aima-job-management'
+    static_configs:
+      - targets: ['job-management:8003']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'aima-gpu-orchestration'
+    static_configs:
+      - targets: ['gpu-orchestration:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'aima-analysis-execution'
+    static_configs:
+      - targets: ['analysis-execution:8005']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'aima-data-fusion'
+    static_configs:
+      - targets: ['data-fusion:8006']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Infrastructure Services
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    scrape_interval: 60s
+
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb:27017']
+    scrape_interval: 60s
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 60s
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    scrape_interval: 60s
+
+  - job_name: 'minio'
+    static_configs:
+      - targets: ['minio:9000']
+    scrape_interval: 60s
+
+  # Node Exporter für System-Metriken
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+
+  # Docker Container Metriken
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
