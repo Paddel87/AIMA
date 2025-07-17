@@ -4,6 +4,25 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/) und dieses Projekt hält sich an [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.3.0-alpha] - 2025-07-17
+
+### Geändert
+
+- **Configuration Management Service (Phase 1.2 - Kritische Reparatur):**
+  - Vollständige Überarbeitung des Configuration Management Service nach Bottom-to-Top-Prinzip
+  - Implementierung einer robusten Startup-Sequenz mit graceful initialization
+  - Verbesserung der Dockerfile mit Multi-Stage-Build für erhöhte Sicherheit und Performance
+  - Optimierung der Service-Dependencies mit Fallback-Mechanismen
+  - Implementierung umfassender Health-Checks und Monitoring
+  - Hinzufügung fehlender Imports und Stabilisierung der Service-Architektur
+  - Anpassung an das überarbeitete UMSETZUNGSKONZEPT.md mit Bottom-to-Top-Entwicklungsphilosophie
+
+- **Systemarchitektur:**
+  - Überarbeitung des UMSETZUNGSKONZEPT.md mit neuer Bottom-to-Top-Entwicklungsphilosophie
+  - Klassifizierung des Configuration Management Service als kritisch instabil
+  - Definition klarer Dependency-Hierarchien und Validierungskriterien
+  - Etablierung des User Management Service als Vorbild für stabile Service-Entwicklung
+
 ## [0.2.1-alpha] - 2024-12-19
 
 ### Geändert

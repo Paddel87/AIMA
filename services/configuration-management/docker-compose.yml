@@ -1,0 +1,182 @@
+version: '3.8'
+
+services:
+  configuration-management:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aima-configuration-management
+    ports:
+      - "8002:8002"
+    environment:
+      # Application settings
+      - APP_NAME=AIMA Configuration Management
+      - APP_VERSION=1.0.0
+      - ENVIRONMENT=development
+      - HOST=0.0.0.0
+      - PORT=8002
+      
+      # Database settings
+      - DATABASE_URL=postgresql://config_user:config_password@postgres:5432/aima_config
+      - DATABASE_POOL_SIZE=10
+      - DATABASE_MAX_OVERFLOW=20
+      
+      # Redis settings
+      - REDIS_URL=redis://redis:6379/2
+      - REDIS_PASSWORD=
+      - REDIS_DB=2
+      - REDIS_MAX_CONNECTIONS=10
+      
+      # Security settings
+      - JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      
+      # Service URLs
+      - USER_MANAGEMENT_URL=http://user-management:8001
+      
+      # CORS settings
+      - CORS_ORIGINS=["http://localhost:3000","http://localhost:8080"]
+      - TRUSTED_HOSTS=["localhost","127.0.0.1"]
+      
+      # Logging
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=text
+      
+      # Configuration Management specific
+      - CONFIG_CACHE_TTL=3600
+      - CONFIG_MAX_HISTORY_ENTRIES=100
+      - CONFIG_ENABLE_VERSIONING=true
+      - CONFIG_BACKUP_ENABLED=true
+      - CONFIG_BACKUP_INTERVAL=3600
+    
+    volumes:
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    networks:
+      - aima-network
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: aima-config-postgres
+    environment:
+      - POSTGRES_DB=aima_config
+      - POSTGRES_USER=config_user
+      - POSTGRES_PASSWORD=config_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    
+    networks:
+      - aima-network
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U config_user -d aima_config"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: aima-config-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    
+    volumes:
+      - redis_data:/data
+    
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    
+    networks:
+      - aima-network
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Optional: Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: aima-config-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    
+    ports:
+      - "8083:8081"
+    
+    depends_on:
+      - redis
+    
+    networks:
+      - aima-network
+    
+    restart: unless-stopped
+    
+    profiles:
+      - tools  # Only start with --profile tools
+
+  # Optional: pgAdmin for PostgreSQL management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: aima-config-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@aima.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    
+    ports:
+      - "8084:80"
+    
+    depends_on:
+      - postgres
+    
+    networks:
+      - aima-network
+    
+    restart: unless-stopped
+    
+    profiles:
+      - tools  # Only start with --profile tools
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  aima-network:
+    driver: bridge
+    name: aima-network
