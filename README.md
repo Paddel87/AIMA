@@ -1,5 +1,16 @@
 # AIMA - AI Media Analysis
 
+[![Version](https://img.shields.io/badge/version-0.3.1--alpha-blue.svg)](https://github.com/Paddel87/AIMA/releases/tag/v0.3.1-alpha)
+[![License](https://img.shields.io/badge/license-TBD-lightgrey.svg)](#)
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
+[![Development Status](https://img.shields.io/badge/status-alpha-orange.svg)](#)
+[![AI Powered](https://img.shields.io/badge/AI-powered-purple.svg)](#)
+[![GPU Ready](https://img.shields.io/badge/GPU-ready-green.svg)](#)
+[![Microservices](https://img.shields.io/badge/architecture-microservices-blue.svg)](#)
+
 🤖 **Künstliche Intelligenz für umfassende Medienanalyse**
 
 AIMA ist ein fortschrittliches KI-System zur automatisierten Analyse von Audio-, Bild- und Videodateien. Das System nutzt modernste Machine Learning-Modelle und GPU-Computing für die Erkennung von Personen, Objekten, Emotionen und Kontextinformationen.
