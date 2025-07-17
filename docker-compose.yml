@@ -127,6 +127,73 @@ services:
     networks:
       - aima-network
 
+  # User Management Service
+  user-management:
+    build:
+      context: ./services/user-management
+      dockerfile: Dockerfile
+    container_name: aima-user-management
+    ports:
+      - "8001:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=postgresql://aima_user:aima_password@postgres:5432/aima
+      - REDIS_URL=redis://:aima_password@redis:6379/0
+      - RABBITMQ_URL=amqp://aima_user:aima_password@rabbitmq:5672/
+      - SECRET_KEY=your-secret-key-change-in-production
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    volumes:
+      - ./services/user-management/logs:/app/logs
+    networks:
+      - aima-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user-management.rule=PathPrefix(`/api/v1/users`)"
+      - "traefik.http.services.user-management.loadbalancer.server.port=8000"
+
+  # Configuration Management Service
+  configuration-management:
+    build:
+      context: ./services/configuration-management
+      dockerfile: Dockerfile
+    container_name: aima-configuration-management
+    ports:
+      - "8002:8002"
+    environment:
+      - APP_NAME=AIMA Configuration Management
+      - APP_VERSION=1.0.0
+      - ENVIRONMENT=development
+      - HOST=0.0.0.0
+      - PORT=8002
+      - DATABASE_URL=postgresql://aima_user:aima_password@postgres:5432/aima
+      - REDIS_URL=redis://:aima_password@redis:6379/1
+      - JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - USER_MANAGEMENT_URL=http://user-management:8000
+      - LOG_LEVEL=INFO
+      - CONFIG_CACHE_TTL=3600
+      - CONFIG_ENABLE_VERSIONING=true
+    depends_on:
+      - postgres
+      - redis
+      - user-management
+    volumes:
+      - ./services/configuration-management/logs:/app/logs
+    networks:
+      - aima-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.configuration-management.rule=PathPrefix(`/api/v1/config`)"
+      - "traefik.http.services.configuration-management.loadbalancer.server.port=8002"
+
 volumes:
   postgres_data:
   mongodb_data:
