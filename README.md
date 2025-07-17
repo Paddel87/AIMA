@@ -82,7 +82,15 @@ Dieses Projekt folgt einem **Vision Driven Development**-Ansatz, bei dem eine KI
 
 ```
 AIMA/
-├── Dokumentation/
+├── services/                          # Microservices
+│   ├── user-management/               # Benutzerverwaltung
+│   └── configuration-management/      # Konfigurationsverwaltung
+├── database/                          # Datenbankinitialisierung
+│   └── init/
+├── monitoring/                        # Überwachung & Metriken
+│   ├── grafana/
+│   └── prometheus.yml
+├── Dokumentation/                     # Umfassende Dokumentation
 │   ├── Medienanalyse/
 │   │   ├── AUDIOANALYSE.md
 │   │   ├── BILDANALYSE.md
@@ -90,25 +98,29 @@ AIMA/
 │   │   └── ML_MODELLE_BRAINSTORMING.md
 │   ├── GPU-Administration/
 │   │   └── GPU_INSTANZ_ADMINISTRATION.md
-│   ├── Medientransfer/
-│   │   └── MEDIENTRANSFER.md
 │   ├── System/
 │   │   ├── SYSTEMFAEHIGKEITEN.md
 │   │   ├── MODULARISIERUNG_ENTWURF.md
-│   │   ├── PIPELINE_KONZEPT.md
-│   │   ├── DATENFUSION_IMPLEMENTIERUNG.md
 │   │   └── ...
 │   └── UEBERSICHT.md
+├── docker-compose.yml                 # Zentrale Service-Orchestrierung
+├── build.ps1                         # Windows Build-Script
+├── build.sh                          # Linux/macOS Build-Script
+├── Makefile                          # Build-Automatisierung
+├── BUILD_FIX_DOCUMENTATION.md        # Build-Infrastruktur Dokumentation
 └── README.md
 ```
 
 ## 🛠️ Technologie-Stack
 
-- **Backend**: Python, FastAPI
+- **Backend**: Python 3.9+, FastAPI 0.104+
 - **ML/AI**: PyTorch, Transformers, OpenCV
 - **Datenbanken**: PostgreSQL, MongoDB, Vektordatenbanken
+- **API Gateway**: Traefik (Load Balancing, SSL Termination)
+- **Container**: Docker, Docker Compose
+- **Build Tools**: PowerShell, Bash, Makefile
+- **Monitoring**: Prometheus, Grafana
 - **Cloud**: GPU-Instanzen (AWS, GCP, Azure)
-- **Container**: Docker, Kubernetes
 - **Sicherheit**: End-to-End-Verschlüsselung
 
 ## 📋 Systemanforderungen
@@ -128,15 +140,122 @@ AIMA/
 ## 🚦 Entwicklungsstatus
 
 - ✅ **Konzeption**: Vollständig dokumentiert
-- 🔄 **Architektur**: In Entwicklung
-- ⏳ **Implementation**: Geplant
+- ✅ **Architektur**: Microservices-Architektur implementiert
+- 🔄 **Implementation**: User Management & Configuration Management Services
+- 🔄 **Build-Infrastruktur**: Docker-Compose, Traefik API Gateway
+- ⏳ **ML-Pipeline**: Geplant
+- ⏳ **GPU-Integration**: Geplant
 - ⏳ **Testing**: Geplant
-- ⏳ **Deployment**: Geplant
+
+## 🚀 Schnellstart
+
+### Voraussetzungen
+- Docker & Docker Compose
+- PowerShell (Windows) oder Bash (Linux/macOS)
+- Make (optional)
+
+### Installation & Start
+
+```bash
+# Repository klonen
+git clone https://github.com/Paddel87/AIMA.git
+cd AIMA
+
+# Mit Build-Script (empfohlen)
+./build.ps1    # Windows
+./build.sh     # Linux/macOS
+
+# Oder mit Makefile
+make build
+make up
+
+# Oder direkt mit Docker Compose
+docker-compose up --build
+```
+
+### Services
+- **API Gateway**: http://localhost (Traefik Dashboard: http://localhost:8080)
+- **User Management**: http://localhost/user-api/docs
+- **Configuration Management**: http://localhost/config-api/docs
+- **Monitoring**: http://localhost:3000 (Grafana)
+
+## 🏢 Implementierte Services
+
+### 👤 User Management Service
+- **Port**: 8001 (intern), über API Gateway erreichbar
+- **Features**: 
+  - Benutzerregistrierung und -authentifizierung
+  - JWT-Token-basierte Sicherheit
+  - Rollenverwaltung
+  - PostgreSQL-Integration mit Alembic-Migrationen
+- **API**: FastAPI mit automatischer OpenAPI-Dokumentation
+- **Health Check**: `/health` Endpoint
+
+### ⚙️ Configuration Management Service
+- **Port**: 8002 (intern), über API Gateway erreichbar
+- **Features**:
+  - Zentrale Konfigurationsverwaltung
+  - Umgebungsspezifische Einstellungen
+  - Service-Discovery-Integration
+  - Dynamische Konfigurationsupdates
+- **API**: FastAPI mit automatischer OpenAPI-Dokumentation
+- **Health Check**: `/health` Endpoint
+
+### 🌐 Traefik API Gateway
+- **Port**: 80 (HTTP), 443 (HTTPS), 8080 (Dashboard)
+- **Features**:
+  - Automatisches Service Discovery
+  - Load Balancing
+  - SSL/TLS Termination
+  - Request Routing basierend auf Pfaden
+  - Health Check Integration
+
+## 🔧 Build-Infrastruktur
+
+### Bottom-to-Top Build-Strategie
+Das AIMA-Projekt implementiert eine robuste "Bottom-to-Top" Build-Strategie:
+
+1. **Datenbank-Services** (PostgreSQL, MongoDB)
+2. **Core-Services** (User Management, Configuration Management)
+3. **API Gateway** (Traefik)
+4. **Monitoring** (Prometheus, Grafana)
+
+### Build-Tools
+- **`build.ps1`**: Windows PowerShell Build-Script mit Health Checks
+- **`build.sh`**: Linux/macOS Bash Build-Script mit Health Checks
+- **`Makefile`**: Plattformübergreifende Build-Automatisierung
+- **`docker-compose.yml`**: Zentrale Service-Orchestrierung
+
+### Verfügbare Build-Kommandos
+```bash
+# Vollständiger Build mit Health Checks
+make build-and-start
+
+# Services starten
+make up
+
+# Services stoppen
+make down
+
+# Logs anzeigen
+make logs
+
+# System bereinigen
+make clean
+```
+
+### Health Check System
+Jeder Service implementiert Health Check Endpoints:
+- Automatische Verfügbarkeitsüberprüfung
+- Dependency-basierte Startreihenfolge
+- Robuste Fehlerbehandlung
+- Detaillierte Logging-Ausgaben
 
 ## 📚 Dokumentation
 
 Detaillierte Dokumentation finden Sie in den folgenden Bereichen:
 
+- **[Build-Infrastruktur](BUILD_FIX_DOCUMENTATION.md)**: Build-System & Deployment
 - **[Übersicht](Dokumentation/UEBERSICHT.md)**: Vollständige Systemübersicht
 - **[Medienanalyse](Dokumentation/Medienanalyse/)**: Audio-, Bild- und Videoanalyse
 - **[GPU-Administration](Dokumentation/GPU-Administration/)**: Cloud-GPU-Management
