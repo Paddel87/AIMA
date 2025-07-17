@@ -70,7 +70,7 @@ Dieses Dokument beschreibt die funktionalen und nicht-funktionalen Anforderungen
 
 ### 2.1 GPU-Orchestrierung
 - Automatische Auswahl und Bereitstellung von GPU-Ressourcen
-- Unterstützung für verschiedene GPU-Anbieter (RunPod, Vast.ai, lokale GPUs)
+- Unterstützung für verschiedene GPU-Anbieter (RunPod, Vast.ai)
 - Optimale Ressourcenzuweisung basierend auf Analysetyp und -umfang
 - Kostenoptimierung durch intelligente Anbieterauswahl
 

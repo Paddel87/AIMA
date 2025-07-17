@@ -20,13 +20,8 @@ Dieses Dokument sammelt Unklarheiten in der Systemspezifikation und schlägt Kl�
   - Prozess bei Überschreitung eines Kostenbudgets
   - Umgang mit Abweichungen zwischen Schätzung und tatsächlichen Kosten
 
-### 1.3 Integration lokaler GPUs
-- **Unklarheit**: Es fehlt eine Beschreibung, wie lokale GPUs in den Workflow integriert werden und wie das System zwischen lokalen und Cloud-GPUs entscheidet.
-- **Vorgeschlagene Klärung**:
-  - Entscheidungskriterien für die Auswahl zwischen lokalen und Cloud-GPUs
-  - Prozess zur Registrierung und Verwaltung lokaler GPUs
-  - Umgang mit unterschiedlichen Leistungsmerkmalen lokaler GPUs
-  - Failover-Mechanismen bei Nichtverfügbarkeit lokaler Ressourcen
+
+  
 
 ## 2. Technische Details
 

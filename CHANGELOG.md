@@ -4,6 +4,18 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/) und dieses Projekt hält sich an [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.2.1-alpha] - 2024-12-19
+
+### Entfernt
+
+- **Lokale GPU-Unterstützung:**
+  - Vollständige Entfernung der lokalen GPU-Integration aus der Systemarchitektur
+  - Löschung der `LOKALE_GPU_INTEGRATION.md` Dokumentation
+  - Entfernung lokaler GPU-Referenzen aus allen Medienanalyse-Modulen (Audio, Bild, Video)
+  - Aktualisierung der GPU-Provider-Strategie auf reine Cloud-GPU-Architektur
+  - Vereinfachung der Entscheidungskriterien für GPU-Anbieterauswahl
+  - Fokussierung auf RunPod, Vast.ai und große Cloud-Anbieter (AWS, GCP, Azure)
+
 ## [0.2.0-alpha] - 2024-12-19
 
 ### Hinzugefügt

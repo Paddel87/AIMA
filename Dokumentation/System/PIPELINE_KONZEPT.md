@@ -2,7 +2,7 @@
 
 ## Überblick
 
-Dieses Dokument beschreibt die zeitlich synchronisierte Pipeline-Architektur für das AIMA-System unter Berücksichtigung von LLaVA als zentralem multimodalen Fusionskomponenten.
+Dieses Dokument beschreibt die zeitlich synchronisierte Pipeline-Architektur für das AIMA-System mit **LLaVA-1.6 (34B) als zentralem multimodalen Modell** und **Llama 3.1 (70B/405B) für finale Datenfusion**. Diese konsolidierte Architektur reduziert die Komplexität erheblich, indem LLaVA die meisten spezialisierten Bildanalysemodelle ersetzt.
 
 ## 1. Zeitschienen-Architektur
 
@@ -49,25 +49,30 @@ Analyse-Fenster:        [  W1  ][  W2  ][  W3  ][  W4  ][  W5  ]...
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-### 2.2 Detaillierte Pipeline-Struktur
+### 2.2 Konsolidierte Pipeline-Struktur
 
 ```python
 class AIMAPipeline:
     def __init__(self):
         # Stufe 1: Datenextraktion
-        self.audio_extractor = AudioExtractor()
-        self.video_extractor = VideoExtractor()
+        self.media_extractor = MediaExtractor()  # Vereinheitlicht für alle Medientypen
         
-        # Stufe 2: Multimodale Analyse
-        self.audio_analyzer = AudioAnalyzer()
-        self.llava_analyzer = LLaVAAnalyzer()
+        # Stufe 2: LLaVA-zentrierte Multimodale Analyse
+        self.llava_analyzer = LLaVAAnalyzer()  # Primäres multimodales Modell
+        self.whisper_analyzer = WhisperAnalyzer()  # Spezialisiert für Audio
         
-        # Stufe 3: Finale Fusion
-        self.llama_fusion = LlamaFusion()
+        # Stufe 3: Llama 3.1 Finale Fusion
+        self.llama_fusion = Llama31Fusion()  # Finale Synthese und Kontextualisierung
         
         # Zeitliche Synchronisation
         self.timeline = None
         self.sync_buffer = SynchronizationBuffer()
+        
+        # Fallback-Modelle (nur bei Bedarf)
+        self.fallback_models = {
+            'face_detection': None,  # RetinaFace bei Bedarf
+            'speaker_id': None       # Zusätzliche Audio-Modelle bei Bedarf
+        }
 ```
 
 ## 3. Stufe 1: Zeitlich synchronisierte Datenextraktion

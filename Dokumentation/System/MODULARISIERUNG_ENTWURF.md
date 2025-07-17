@@ -151,7 +151,7 @@ Basierend auf einer umfassenden Analyse der Systemanforderungen wird die folgend
 **Zweck**: Verwaltung und Orchestrierung von GPU-Ressourcen
 
 **Verantwortlichkeiten**:
-- GPU-Provider-Integration (RunPod, Vast.ai, lokale GPUs)
+- GPU-Provider-Integration (RunPod, Vast.ai)
 - Instanz-Lifecycle-Management
 - Ressourcenzuweisung und -optimierung
 - Kostenoptimierung
@@ -197,23 +197,45 @@ Basierend auf einer umfassenden Analyse der Systemanforderungen wird die folgend
 - Nutzt das `Data Abstraction & Persistence Module` zur Speicherung der Ergebnisse.
 - Events: `analysis_step_completed`, `analysis_pipeline_finished`.
 
-#### 2.3.5 Data Fusion Module (LLM)
-**Zweck**: Intelligente Zusammenführung der Ergebnisse aus den verschiedenen Analyse-Pipelines zu einem kohärenten, verständlichen Dossier.
+#### 2.3.5 LLaVA Multimodal Analysis Module
+**Zweck**: Zentrale multimodale Analyse mit LLaVA-1.6 (34B) als primärem Analysemodul.
 
 **Verantwortlichkeiten**:
-- Sammeln der Roh-Ergebnisse aus der `analysis_results` Collection.
-- Anwendung eines übergeordneten Large Language Models (LLM), um die Daten zu kontextualisieren, zu korrelieren und zusammenzufassen.
-- Erstellung eines finalen, narrativen Analyseberichts (Dossier).
-- Identifikation von Widersprüchen oder Unsicherheiten in den Analyseergebnissen.
+- Multimodale Analyse von Bildern, Videos und Text in einem einheitlichen Modell
+- Kontextuelle Interpretation durch integrierte Vision-Language-Capabilities
+- Strukturierte Ausgabe von Analyseergebnissen
+- Erkennung von Personen, Objekten, Szenen, Emotionen und Aktivitäten
+- Fesselungs- und Situationsanalyse durch kontextuelle Bewertung
 
 **Technische Spezifikation**:
-- Llama 3.1 oder ähnliches leistungsfähiges LLM.
-- Prompt-Engineering-Framework zur Steuerung der Fusion.
+- LLaVA-1.6 (34B) als Kern-Modell
+- GPU-optimierte Inferenz (RunPod/Vast.ai)
+- Batch-Processing für Effizienz
+- Strukturierte JSON-Ausgabe
 
 **Schnittstellen**:
-- Liest Ergebnisse aus dem `Data Abstraction & Persistence Module`.
-- Schreibt das finale Dossier zurück in die Datenbank.
-- Events: `fusion_completed`, `dossier_ready`.
+- gRPC API für Analyse-Requests
+- Events: `llava_analysis_started`, `llava_analysis_completed`
+
+#### 2.3.6 Llama 3.1 Data Fusion Module
+**Zweck**: Finale Datenfusion und Kontextualisierung mit Llama 3.1 (70B/405B).
+
+**Verantwortlichkeiten**:
+- Fusion von LLaVA-Analyseergebnissen mit Audio-Transkriptionen
+- Kontextuelle Synthese und Widerspruchsauflösung
+- Erstellung kohärenter, narrativer Dossiers
+- Konfidenz-Bewertung und Unsicherheitsquantifizierung
+- Finale Fesselungs- und Freiwilligkeitsbewertung
+
+**Technische Spezifikation**:
+- Llama 3.1 (70B für Standard, 405B für komplexe Fälle)
+- Prompt-Engineering-Framework für forensische Analyse
+- GPU-optimierte Inferenz
+
+**Schnittstellen**:
+- Liest LLaVA-Ergebnisse und Audio-Transkriptionen
+- Schreibt finale Dossiers in die Datenbank
+- Events: `fusion_completed`, `dossier_ready`
 **Zweck**: Verwaltung von ML/AI-Modellen
 
 **Verantwortlichkeiten**:
@@ -233,102 +255,93 @@ Basierend auf einer umfassenden Analyse der Systemanforderungen wird die folgend
 - REST API für Modell-Operations
 - Events: model_deployed, model_updated, model_retired
 
-## 5. Analysis Modules (Analyse-Module)
+## 5. Analysis Modules (Konsolidierte Analyse-Module)
 
-### 5.1 Image Analysis Module
-**Zweck**: Analyse von Einzelbildern und Bildserien
+### 5.1 LLaVA Multimodal Analysis Module (Primär)
+**Zweck**: Zentrale multimodale Analyse mit LLaVA-1.6 (34B)
 
 **Verantwortlichkeiten**:
-- Personenerkennung und -tracking
-- Objekterkennung und -klassifikation
-- Gesichtserkennung und -analyse
-- Emotionserkennung
-- Kleidungsanalyse
-- Körper- und Extremitätenhaltungsanalyse (für Fesselungserkennung)
-- Materialerkennung (Seile, Kabelbinder, etc.)
-- Szenenanalyse
+- **Konsolidierte Bild-/Video-Analyse**: Ersetzt separate Image/Video Analysis Module
+- Personenerkennung und -tracking durch Vision-Language-Integration
+- Objekterkennung und -klassifikation mit kontextueller Bewertung
+- Emotionserkennung aus visuellen Hinweisen
+- Kleidungs- und Materialanalyse
+- Körperhaltungs- und Situationsanalyse
+- Szenen- und Kontextanalyse
+- **Fesselungserkennung**: Direkte multimodale Bewertung statt separater Modelle
 
 **Technische Spezifikation**:
-- PyTorch/TensorFlow für ML-Inferenz
-- YOLO, EfficientDet für Objekterkennung
-- InsightFace für Gesichtserkennung
-- MediaPipe/AlphaPose für Pose-Estimation
-- Standard-Objekterkennungsmodelle für Materialien
+- LLaVA-1.6 (34B) als einheitliches multimodales Modell
+- GPU-optimierte Inferenz (RunPod/Vast.ai)
+- Strukturierte JSON-Ausgabe für nachgelagerte Verarbeitung
+- Batch-Processing für Effizienz
 
-**Anmerkung zur Fesselungserkennung**:
-Da keine spezialisierten Custom Models für Fesselungserkennung verfügbar sind, erfolgt die Erkennung durch Analyse von:
-- Körper- und Extremitätenhaltung (unnatürliche Positionen)
-- Erkannte Materialien, die zur Fesselung geeignet sind (Seile, Kabelbinder, etc.)
-- Kontextuelle Hinweise aus der Szenenanalyse
-Die finale Bewertung einer tatsächlichen Fesselung erfolgt erst im Data Fusion Module durch Kombination aller Indikatoren.
+**Vorteile der Konsolidierung**:
+- **Drastisch reduzierte Komplexität**: Ein Modell statt 5+ spezialisierte Modelle
+- **Bessere Kontextualisierung**: Multimodale Analyse in einem Durchgang
+- **Konsistente Ergebnisse**: Keine Widersprüche zwischen separaten Modellen
+- **Vereinfachte Wartung**: Ein Modell, eine API, eine Deployment-Pipeline
 
 **Schnittstellen**:
-- gRPC API für Analyse-Requests
-- Events: analysis_started, analysis_completed, analysis_failed
+- gRPC API für multimodale Analyse-Requests
+- Events: llava_analysis_started, llava_analysis_completed, llava_analysis_failed
 
-### 5.2 Video Analysis Module
-**Zweck**: Analyse von Videodateien
+### 5.2 Audio Analysis Module (Spezialisiert)
+**Zweck**: Spezialisierte Audio-Analyse als Ergänzung zu LLaVA
 
 **Verantwortlichkeiten**:
-- Frame-by-Frame Analyse
-- Temporal Tracking von Objekten/Personen
-- Bewegungsanalyse
-- Verhaltensanalyse
-- Audio-Video-Synchronisation
-- Szenenübergänge
+- **Whisper v3**: Hochpräzise Spracherkennung und Transkription
+- **pyannote.audio**: Speaker Diarization und Sprecheridentifikation
+- **Emotion2Vec**: Audio-Emotionsanalyse (ergänzend zu LLaVA)
+- **PANNs**: Spezifische Geräuschklassifikation
+- Audio-Qualitätsbewertung und Rauschanalyse
 
 **Technische Spezifikation**:
-- FFmpeg für Video-Preprocessing
-- ByteTrack/DeepSORT für Tracking
-- MediaPipe für Pose-Estimation
-- Custom Models für Verhaltensanalyse
+- Whisper v3 (large-v3) als primäres Audio-Modell
+- Spezialisierte Ergänzungsmodelle bei Bedarf
+- GPU-optimierte Audio-Pipeline
 
 **Schnittstellen**:
-- gRPC API für Analyse-Requests
-- Events: analysis_started, frame_processed, analysis_completed
+- gRPC API für Audio-Analyse-Requests
+- Events: transcription_completed, speaker_identified, audio_analysis_completed
 
-### 5.3 Audio Analysis Module
-**Zweck**: Analyse von Audiodateien und -streams
-
-**Verantwortlichkeiten**:
-- Spracherkennung und Transkription
-- Sprecheridentifikation
-- Emotionsanalyse der Stimme
-- Hintergrundgeräusch-Analyse
-- Audio-Qualitätsbewertung
-- Nicht-linguistische Analyse
-
-**Technische Spezifikation**:
-- Whisper für Speech-to-Text
-- x-vectors für Sprecheridentifikation
-- Librosa für Audio-Feature-Extraktion
-- Custom Models für Emotionserkennung
-
-**Schnittstellen**:
-- gRPC API für Analyse-Requests
-- Events: transcription_completed, speaker_identified, emotion_detected
-
-### 5.4 Data Fusion Module
-**Zweck**: Fusion und Interpretation multimodaler Analyseergebnisse
+### 5.3 Fallback Analysis Module (Bei Bedarf)
+**Zweck**: Spezialisierte Fallback-Modelle für Fälle, in denen LLaVA unzureichend ist
 
 **Verantwortlichkeiten**:
-- Zusammenführung von Bild-, Video- und Audioanalysen
-- Kontextuelle Interpretation
-- Widerspruchserkennung und -auflösung
-- Konfidenz-Bewertung
-- **Fesselungsbewertung**: Kombination von Körperhaltung, Materialerkennung und Kontext
-- LLM-basierte Zusammenfassung
-- Freiwilligkeitsbewertung
+- **RetinaFace**: Präzise Gesichtserkennung bei schwierigen Bedingungen
+- **Spezialisierte Tracking-Modelle**: Für komplexe Bewegungsanalysen
+- **Custom Forensic Models**: Für sehr spezifische Anwendungsfälle
+
+**Aktivierung**:
+- Nur bei unzureichender LLaVA-Performance
+- Automatische Fallback-Logik basierend auf Konfidenz-Scores
+- Manuelle Aktivierung für spezielle Fälle
 
 **Technische Spezifikation**:
-- GPT/BERT-basierte LLMs
-- Custom Fusion-Algorithmen
-- Uncertainty Quantification
-- Multi-modal Attention Mechanisms
+- Modular ladbare spezialisierte Modelle
+- Conditional Loading basierend auf Anforderungen
+- Integration in bestehende LLaVA-Pipeline
+
+### 5.4 Llama 3.1 Data Fusion Module (Finale Synthese)
+**Zweck**: Finale Fusion und Kontextualisierung aller Analyseergebnisse
+
+**Verantwortlichkeiten**:
+- Fusion von LLaVA-Ergebnissen mit Audio-Transkriptionen
+- Kontextuelle Interpretation und Widerspruchsauflösung
+- **Finale Fesselungsbewertung**: LLM-basierte Synthese aller Indikatoren
+- Konfidenz-Bewertung und Unsicherheitsquantifizierung
+- Erstellung narrativer, forensischer Dossiers
+- Freiwilligkeits- und Konsensbewertung
+
+**Technische Spezifikation**:
+- Llama 3.1 (70B für Standard, 405B für komplexe Fälle)
+- Forensik-optimierte Prompt-Engineering
+- GPU-optimierte LLM-Inferenz
 
 **Schnittstellen**:
 - gRPC API für Fusion-Requests
-- Events: fusion_started, fusion_completed, report_generated
+- Events: fusion_started, fusion_completed, dossier_generated
 
 ## 6. Data Management Module (Datenmanagement)
 

@@ -41,16 +41,7 @@ Dieses Dokument beschreibt die Administration von GPU-Instanzen für die KI-Medi
   - Priorisierung von Instanzen mit niedrigerer Auslastung
   - Automatische Erstellung von Snapshots für schnellere Wiederherstellung
 
-#### 1.2.3 Lokale GPUs
-- **Ressourcenzuweisung**:
-  - Dynamische Zuweisung basierend auf aktueller Systemlast
-  - Reservierung von Ressourcen für kritische Analysen
-  - Priorisierung lokaler GPUs für sensible Daten
 
-- **Monitoring und Wartung**:
-  - Kontinuierliche Überwachung der GPU-Temperatur und -Auslastung
-  - Automatische Wartungsfenster für Updates
-  - Benachrichtigung bei Hardware-Problemen
 
 ## 2. Container-Konfiguration und Software-Setup
 

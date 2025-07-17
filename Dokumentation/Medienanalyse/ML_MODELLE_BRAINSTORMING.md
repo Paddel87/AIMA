@@ -1,6 +1,26 @@
-# ML-Modelle für AIMA-Medienanalyse - Brainstorming
+# ML-Modelle für AIMA-Medienanalyse - Konsolidierte Architektur
 
-Dieses Dokument sammelt passende Machine Learning Modelle für die verschiedenen Analysebereiche des AIMA-Systems basierend auf den Anforderungen aus den Medienanalyse-Dokumenten.
+Dieses Dokument beschreibt die **konsolidierte ML-Architektur** für das AIMA-System mit **LLaVA-1.6 (34B) als zentralem multimodalem Modell** und **Llama 3.1 (70B/405B) für finale Datenfusion**. Die hier aufgeführten spezialisierten Modelle dienen als **Fallback-Optionen** oder **Ergänzungsmodelle** für Fälle, in denen LLaVA allein nicht ausreicht.
+
+## Architektur-Überblick
+
+### Primäre Modelle (Kern-Pipeline)
+- **LLaVA-1.6 (34B)**: Zentrale multimodale Analyse (Bilder, Videos, Text)
+- **Whisper v3 (large-v3)**: Spezialisierte Audio-Transkription
+- **Llama 3.1 (70B/405B)**: Finale Datenfusion und Kontextualisierung
+
+### Spezialisierte Ergänzungsmodelle (Bei Bedarf)
+- **RetinaFace**: Präzise Gesichtserkennung (falls LLaVA unzureichend)
+- **Emotion2Vec**: Audio-Emotionsanalyse (ergänzend zu LLaVA)
+- **PANNs**: Spezifische Geräuschklassifikation
+- **pyannote.audio**: Speaker Diarization
+
+### Vorteile der Konsolidierung
+- **Drastisch reduzierte Komplexität**: Ein Modell statt 10+ spezialisierte Modelle
+- **Vereinfachte Pipeline**: Media → LLaVA → Llama 3.1 → Ergebnis
+- **Bessere Kontextualisierung**: Multimodale Analyse in einem Modell
+- **Reduzierte Wartung**: Weniger Modelle, weniger Abhängigkeiten
+- **Kosteneffizienz**: Optimierte GPU-Nutzung
 
 ## 1. Audioanalyse-Modelle
 

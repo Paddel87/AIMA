@@ -59,7 +59,7 @@ Dieses Dokument beschreibt detailliert, wie das System mit einer Videodatei umge
   - Erforderlicher VRAM (mindestens 16 GB)
   - Kosten-Nutzen-Verhältnis
   - Verfügbarkeit
-- Bei lokaler GPU-Verfügbarkeit: Option zur Nutzung der lokalen Ressourcen
+
 
 ### 3.3 Jobeinreihung
 - Einreihung des Analysejobs in die Warteschlange

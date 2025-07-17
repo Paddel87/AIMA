@@ -53,52 +53,56 @@ Ein zentrales und unabdingbares Prinzip für die erfolgreiche Umsetzung dieses K
 
 ## Phase 2: Analyse-Pipeline und Datenpersistenz
 
-**Ziel:** Implementierung der Kern-Analysefunktionen und der dazugehörigen Datenabstraktions- und Persistenzschicht.
+**Ziel:** Implementierung der Kern-Analysefunktionen mit LLaVA als zentralem multimodalem Modell und der dazugehörigen Datenabstraktions- und Persistenzschicht.
 
-**Dauer:** 6-8 Wochen
+**Dauer:** 5-7 Wochen (reduziert durch modulare Konsolidierung)
 
 ### Iteration 2.1: Datenabstraktion und Persistenz
 
 *   **Aufgaben:**
     *   Implementierung des `Data Abstraction & Persistence Module`.
     *   Einrichtung der Datenbanken (PostgreSQL, MongoDB, Milvus).
-    *   Definition der Datenmodelle und Schemata.
+    *   Definition der Datenmodelle und Schemata für multimodale Analyseergebnisse.
 *   **Ergebnis:** Eine einheitliche Schnittstelle für den Zugriff auf die verschiedenen Datenbanken ist verfügbar.
 
 ### Iteration 2.2: Job- und GPU-Orchestrierung
 
 *   **Aufgaben:**
     *   Implementierung des `Job Management Module` zur Verwaltung von Analysejobs.
-    *   Implementierung des `GPU Orchestration Module` zur Verwaltung von GPU-Ressourcen.
+    *   Implementierung des `GPU Orchestration Module` mit RunPod/Vast.ai-Integration.
+    *   Konfiguration für LLaVA-1.6 (34B) und Llama 3.1 (70B) Deployment.
 *   **Ergebnis:** Analysejobs können erstellt, priorisiert und an verfügbare GPU-Ressourcen zugewiesen werden.
 
-### Iteration 2.3: Basis-Analyse-Pipeline
+### Iteration 2.3: LLaVA-basierte Multimodale Analyse-Pipeline
 
 *   **Aufgaben:**
-    *   Implementierung des `Analysis Execution Module`.
-    *   Integration eines ersten einfachen Analysemodells (z.B. Bilderkennung).
-    *   Durchführung eines vollständigen Analyse-Workflows von Upload bis zum Ergebnis.
-*   **Ergebnis:** Eine erste, einfache Analyse-Pipeline ist funktionsfähig.
+    *   Implementierung des `Analysis Execution Module` mit LLaVA-1.6 (34B) als primärem multimodalem Modell.
+    *   Integration von Whisper für Audio-Analyse als spezialisiertes Ergänzungsmodell.
+    *   Implementierung der vereinfachten Pipeline: Media → LLaVA → Strukturierte Ergebnisse.
+    *   Durchführung eines vollständigen Analyse-Workflows von Upload bis zum strukturierten Ergebnis.
+*   **Ergebnis:** Eine konsolidierte, LLaVA-basierte Analyse-Pipeline ist funktionsfähig und kann Bilder, Videos und (mit Whisper) Audio analysieren.
 
-## Phase 3: Erweiterte Analyse und Datenfusion
+## Phase 3: Datenfusion und Erweiterte Analyse
 
-**Ziel:** Erweiterung der Analysefähigkeiten um multimodale Analysen und die Fusion der Ergebnisse.
+**Ziel:** Integration von Llama 3.1 für finale Datenfusion und Implementierung spezialisierter Analysefunktionen.
 
-**Dauer:** 8-10 Wochen
+**Dauer:** 4-6 Wochen (reduziert durch LLaVA-Konsolidierung)
 
-### Iteration 3.1: Multimodale Analyse
-
-*   **Aufgaben:**
-    *   Integration weiterer Analysemodelle für Video und Audio gemäß `PIPELINE_KONZEPT.md`.
-    *   Implementierung der zeitlichen Synchronisation der Analyseergebnisse.
-*   **Ergebnis:** Das System kann Video- und Audiodateien analysieren und die Ergebnisse zeitlich synchronisieren.
-
-### Iteration 3.2: Datenfusion mit LLM
+### Iteration 3.1: Llama 3.1 Datenfusion
 
 *   **Aufgaben:**
-    *   Implementierung des `Data Fusion Module`.
-    *   Integration eines LLM zur Zusammenführung und Interpretation der Analyseergebnisse.
-*   **Ergebnis:** Das System kann aus den Einzelanalysen ein kohärentes Dossier erstellen.
+    *   Implementierung des `Data Fusion Module` mit Llama 3.1 (70B/405B).
+    *   Integration der LLaVA-Analyseergebnisse mit Llama 3.1 für finale Synthese.
+    *   Implementierung der Fesselungs-Erkennung durch kontextuelle LLM-Analyse.
+*   **Ergebnis:** Das System kann aus den LLaVA-Analysen kohärente, kontextualisierte Dossiers erstellen.
+
+### Iteration 3.2: Spezialisierte Ergänzungsmodelle
+
+*   **Aufgaben:**
+    *   Integration von RetinaFace für präzise Gesichtserkennung (falls LLaVA-Ergebnisse unzureichend).
+    *   Integration zusätzlicher Audio-Analysemodelle für Sprecher-Identifikation.
+    *   Implementierung von Fallback-Mechanismen für spezialisierte Analysen.
+*   **Ergebnis:** Das System verfügt über spezialisierte Ergänzungsmodelle für Fälle, in denen LLaVA allein nicht ausreicht.
 
 ## Phase 4: Benutzeroberfläche und Fertigstellung
 
