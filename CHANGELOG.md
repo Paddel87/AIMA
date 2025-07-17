@@ -6,6 +6,14 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/) 
 
 ## [0.2.1-alpha] - 2024-12-19
 
+### Geändert
+
+- **Framework-Architektur:**
+  - Wechsel von Kubernetes zu Docker-only Betriebskonzept
+  - Vereinfachung der Infrastruktur durch Fokussierung auf Docker Compose
+  - Reduzierung der Komplexität und Betriebskosten
+  - Anpassung der Deployment-Strategie für kleinere bis mittlere Workloads
+
 ### Entfernt
 
 - **Lokale GPU-Unterstützung:**
