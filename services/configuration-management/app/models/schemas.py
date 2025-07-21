@@ -193,8 +193,8 @@ class HealthCheckResponse(BaseSchema):
     status: str = Field(..., description="Service status")
     timestamp: datetime = Field(..., description="Check timestamp")
     version: str = Field(..., description="Service version")
-    database: str = Field(..., description="Database status")
-    redis: str = Field(..., description="Redis status")
+    uptime_seconds: int = Field(..., description="Service uptime in seconds")
+    checks: Dict[str, Any] = Field(..., description="Detailed health checks")
 
 
 class MetricsResponse(BaseSchema):

@@ -62,6 +62,10 @@ class Settings(BaseSettings):
         default=["http://localhost:3000", "http://localhost:8000"],
         description="Allowed CORS origins"
     )
+    TRUSTED_HOSTS: Optional[List[str]] = Field(
+        default=None,
+        description="Trusted hosts for security middleware"
+    )
     
     # Logging Settings
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")

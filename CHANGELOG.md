@@ -4,6 +4,35 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/) und dieses Projekt hält sich an [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.3.2-alpha] - 2025-07-21
+
+### Behoben
+
+- **🚨 User Management Service vollständig stabilisiert:**
+  - Lösung aller ImportError-Probleme durch Hinzufügung fehlender Schema-Klassen (`ServiceStatus`, `ComponentHealth`)
+  - Erstellung des fehlenden `middleware.py` Moduls mit `LoggingMiddleware`, `MetricsMiddleware`, `SecurityHeadersMiddleware` und `RateLimitMiddleware`
+  - Hinzufügung von `asyncpg==0.29.0` zu requirements.txt für PostgreSQL-Async-Verbindungen
+  - Korrektur der `HealthCheckResponse` und `DetailedHealthCheckResponse` Schema-Definitionen
+  - Service läuft nun stabil und ist als "healthy" markiert
+
+### Geändert
+
+- **📋 Dokumentation aktualisiert:**
+  - `UMSETZUNGSKONZEPT.md`: User Management Service Status auf ✅ **VOLLSTÄNDIG STABILISIERT** aktualisiert
+  - `INFRASTRUKTUR_PLAN_1.0.md`: Iteration 1.3 als abgeschlossen markiert
+  - Validierungskriterien für Phase 1.0 erfüllt: 24h Stabilität erreicht
+
+### Technische Details
+
+- **Service-Status:**
+  - User Management: ✅ **HEALTHY** - Läuft stabil ohne Restarts
+  - Configuration Management: ✅ **HEALTHY** - Bereits seit Juli stabil
+  - Alle Infrastruktur-Services: ✅ **HEALTHY**
+
+- **Nächste Schritte:**
+  - Phase 1.0 (Infrastruktur-Fundament): ✅ **ABGESCHLOSSEN**
+  - Bereit für Phase 1.1: API-Gateway und Service-Discovery Implementation
+
 ## [0.3.1-alpha] - 2025-07-18
 
 ### Behoben

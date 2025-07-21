@@ -57,10 +57,7 @@ async def lifespan(app: FastAPI):
         # Phase 1: Database initialization (Bottom-to-Top principle)
         logger.info("Phase 1: Initializing database connection...")
         db_manager = DatabaseManager()
-        await db_manager.initialize()
-        
-        # Create tables if they don't exist
-        await db_manager.create_tables()
+        await db_manager.initialize_async()
         
         logger.info("✓ Database initialized successfully")
         

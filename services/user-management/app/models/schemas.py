@@ -64,7 +64,7 @@ class BaseSchema(BaseModel):
 # User schemas
 class UserBase(BaseSchema):
     """Base user schema with common fields."""
-    username: str = Field(..., min_length=3, max_length=50, regex=r"^[a-zA-Z0-9_-]+$")
+    username: str = Field(..., min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_-]+$")
     email: EmailStr
     full_name: Optional[str] = Field(None, max_length=100)
     role: UserRole = UserRole.USER
@@ -277,14 +277,40 @@ class AuditLogListResponse(BaseSchema):
     pages: int
 
 
+# Service status enumeration
+class ServiceStatus(str, Enum):
+    """Service status enumeration."""
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    UNHEALTHY = "unhealthy"
+
+
 # Health check schemas
 class HealthCheckResponse(BaseSchema):
     """Schema for health check response."""
     status: str
     timestamp: datetime
+    service: str
     version: str
-    environment: str
-    services: Dict[str, Dict[str, Any]]
+    details: Optional[Dict[str, Any]] = None
+
+
+class ComponentHealth(BaseSchema):
+    """Schema for component health status."""
+    status: ServiceStatus
+    response_time_ms: Optional[float] = None
+    error: Optional[str] = None
+    details: Optional[Dict[str, Any]] = None
+
+
+class DetailedHealthCheckResponse(BaseSchema):
+    """Schema for detailed health check response."""
+    status: str
+    timestamp: datetime
+    service: str
+    version: str
+    components: Dict[str, ComponentHealth]
+    details: Optional[Dict[str, Any]] = None
 
 
 class ServiceHealthResponse(BaseSchema):
@@ -323,7 +349,7 @@ class PaginationParams(BaseSchema):
     page: int = Field(1, ge=1, description="Page number")
     per_page: int = Field(20, ge=1, le=100, description="Items per page")
     sort_by: Optional[str] = Field(None, description="Field to sort by")
-    sort_order: Optional[str] = Field("asc", regex=r"^(asc|desc)$", description="Sort order")
+    sort_order: Optional[str] = Field("asc", pattern=r"^(asc|desc)$", description="Sort order")
 
 
 class UserFilterParams(PaginationParams):
@@ -366,3 +392,47 @@ class SystemConfigUpdate(BaseSchema):
     session_settings: Optional[Dict[str, Any]] = None
     security_settings: Optional[Dict[str, Any]] = None
     feature_flags: Optional[Dict[str, bool]] = None
+
+
+# Admin schemas
+class AdminStatsResponse(BaseSchema):
+    """Schema for admin statistics response."""
+    user_stats: UserStatsResponse
+    system_health: Dict[str, Any]
+    recent_activity: List[Dict[str, Any]]
+    performance_metrics: Dict[str, Any]
+
+
+class SystemHealthResponse(BaseSchema):
+    """Schema for system health response."""
+    status: str
+    services: Dict[str, ServiceHealthResponse]
+    uptime: float
+    memory_usage: Dict[str, float]
+    cpu_usage: float
+    disk_usage: Dict[str, float]
+
+
+class UserActivityResponse(BaseSchema):
+    """Schema for user activity response."""
+    user_id: UUID4
+    username: str
+    last_login: Optional[datetime]
+    login_count: int
+    failed_attempts: int
+    recent_actions: List[AuditLogResponse]
+
+
+class BulkUserActionRequest(BaseSchema):
+    """Schema for bulk user action request."""
+    user_ids: List[UUID4]
+    action: str
+    parameters: Optional[Dict[str, Any]] = None
+
+
+class BulkUserActionResponse(BaseSchema):
+    """Schema for bulk user action response."""
+    success_count: int
+    failed_count: int
+    results: List[Dict[str, Any]]
+    errors: List[Dict[str, Any]]

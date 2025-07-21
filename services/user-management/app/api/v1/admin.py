@@ -10,8 +10,8 @@ from sqlalchemy import func, and_, or_
 
 from app.api.deps import get_current_active_user, get_db
 from app.core.config import settings
-from app.models.user import User, UserSession, AuditLog
-from app.schemas.admin import (
+from app.core.database import User, UserSession, AuditLog
+from app.models.schemas import (
     AdminStatsResponse,
     SystemHealthResponse,
     UserActivityResponse,
@@ -19,9 +19,9 @@ from app.schemas.admin import (
     BulkUserActionRequest,
     BulkUserActionResponse,
     SystemConfigResponse,
-    SystemConfigUpdate
+    SystemConfigUpdate,
+    UserResponse
 )
-from app.schemas.user import UserResponse
 from app.services.user_service import UserService
 from app.services.audit_service import AuditService
 from app.core.permissions import require_admin
@@ -317,7 +317,7 @@ async def revoke_session(
     session_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
-) -> Any:
+):
     """Revoke a specific user session."""
     session = db.query(UserSession).filter(
         UserSession.id == session_id

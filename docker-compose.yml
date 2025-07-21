@@ -28,13 +28,30 @@ services:
       POSTGRES_DB: aima
       POSTGRES_USER: aima_user
       POSTGRES_PASSWORD: aima_password
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: pg_stat_statements
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/config/postgresql.conf:/etc/postgresql/postgresql.conf
     ports:
       - "5432:5432"
     networks:
       - aima-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aima_user -d aima"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    restart: unless-stopped
 
   # MongoDB
   mongodb:
@@ -46,22 +63,55 @@ services:
       MONGO_INITDB_DATABASE: aima
     volumes:
       - mongodb_data:/data/db
+      - ./database/config/mongod.conf:/etc/mongod.conf
+      - ./mongo-secrets/mongo-keyfile:/etc/mongo-keyfile
     ports:
       - "27017:27017"
     networks:
       - aima-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    restart: unless-stopped
 
   # Redis for Caching and Session Management
   redis:
     image: redis:7-alpine
     container_name: aima-redis
-    command: redis-server --requirepass aima_password
+    command: redis-server /etc/redis/redis.conf
     volumes:
       - redis_data:/data
+      - ./database/config/redis.conf:/etc/redis/redis.conf
     ports:
       - "6379:6379"
     networks:
       - aima-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "aima_password", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    restart: unless-stopped
 
   # MinIO Object Storage
   minio:
@@ -127,6 +177,78 @@ services:
     networks:
       - aima-network
 
+  # PostgreSQL Exporter for Prometheus
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: aima-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://aima_user:aima_password@postgres:5432/aima?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - aima-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Redis Exporter for Prometheus
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: aima-redis-exporter
+    environment:
+      REDIS_ADDR: "redis://redis:6379"
+      REDIS_PASSWORD: "aima_password"
+    ports:
+      - "9121:9121"
+    networks:
+      - aima-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # MongoDB Exporter for Prometheus
+  mongodb-exporter:
+    image: bitnami/mongodb-exporter:latest
+    container_name: aima-mongodb-exporter
+    environment:
+      MONGODB_URI: "mongodb://aima_user:aima_password@mongodb:27017/admin"
+    ports:
+      - "9216:9216"
+    networks:
+      - aima-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # PostgreSQL Backup Service
+  postgres-backup:
+    image: postgres:15
+    container_name: aima-postgres-backup
+    environment:
+      POSTGRES_PASSWORD: aima_password
+      PGPASSWORD: aima_password
+    volumes:
+      - ./backups/postgres:/backups/postgres
+      - ./database/backup-scripts:/scripts
+    networks:
+      - aima-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      bash -c "
+        chmod +x /scripts/postgres-backup.sh &&
+        while true; do
+          /scripts/postgres-backup.sh
+          echo 'Next backup in 24 hours...'
+          sleep 86400
+        done
+      "
+    restart: unless-stopped
+
   # User Management Service
   user-management:
     build:
@@ -144,9 +266,12 @@ services:
       - SECRET_KEY=your-secret-key-change-in-production
       - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
     depends_on:
-      - postgres
-      - redis
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     volumes:
       - ./services/user-management/logs:/app/logs
     networks:
@@ -181,9 +306,12 @@ services:
       - CONFIG_CACHE_TTL=3600
       - CONFIG_ENABLE_VERSIONING=true
     depends_on:
-      - postgres
-      - redis
-      - user-management
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      user-management:
+        condition: service_started
     volumes:
       - ./services/configuration-management/logs:/app/logs
     networks:

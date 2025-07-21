@@ -15,55 +15,34 @@ scrape_configs:
   # AIMA Services
   - job_name: 'aima-user-management'
     static_configs:
-      - targets: ['user-management:8001']
+      - targets: ['user-management:8000']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
-  - job_name: 'aima-media-lifecycle'
+  - job_name: 'aima-configuration-management'
     static_configs:
-      - targets: ['media-lifecycle:8002']
+      - targets: ['configuration-management:8002']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
-  - job_name: 'aima-job-management'
+  # Infrastructure Services - Database Exporters
+  - job_name: 'postgres-exporter'
     static_configs:
-      - targets: ['job-management:8003']
-    metrics_path: '/metrics'
+      - targets: ['postgres-exporter:9187']
     scrape_interval: 30s
-
-  - job_name: 'aima-gpu-orchestration'
-    static_configs:
-      - targets: ['gpu-orchestration:8004']
     metrics_path: '/metrics'
-    scrape_interval: 30s
 
-  - job_name: 'aima-analysis-execution'
+  - job_name: 'mongodb-exporter'
     static_configs:
-      - targets: ['analysis-execution:8005']
+      - targets: ['mongodb-exporter:9216']
+    scrape_interval: 30s
     metrics_path: '/metrics'
-    scrape_interval: 30s
 
-  - job_name: 'aima-data-fusion'
+  - job_name: 'redis-exporter'
     static_configs:
-      - targets: ['data-fusion:8006']
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
     metrics_path: '/metrics'
-    scrape_interval: 30s
-
-  # Infrastructure Services
-  - job_name: 'postgres'
-    static_configs:
-      - targets: ['postgres:5432']
-    scrape_interval: 60s
-
-  - job_name: 'mongodb'
-    static_configs:
-      - targets: ['mongodb:27017']
-    scrape_interval: 60s
-
-  - job_name: 'redis'
-    static_configs:
-      - targets: ['redis:6379']
-    scrape_interval: 60s
 
   - job_name: 'rabbitmq'
     static_configs:
