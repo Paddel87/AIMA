@@ -199,6 +199,145 @@ Ein zentrales und unabdingbares Prinzip für die erfolgreiche Umsetzung dieses K
 5. **🛡️ Graceful Degradation:** Services MÜSSEN bei Ausfällen weiter funktionieren
 6. **📋 Dependency-Hierarchie:** Klare Ebenen - keine Service darf höhere Ebenen nutzen
 
+---
+
+## 🛡️ VERBINDLICHE ENTWICKLUNGSREGELN (Service Stabilization Framework)
+
+**Diese Regeln sind ZWINGEND für alle zukünftigen Service-Entwicklungen einzuhalten und basieren auf den Lessons Learned aus der User Management Service Stabilisierung (Juli 2025).**
+
+### 🔍 1. Dependency Validation Framework (PFLICHT)
+
+#### Pre-Build Validation (Automatisiert)
+```bash
+# ZWINGEND vor jedem Docker Build
+- ✅ requirements.txt Vollständigkeitsprüfung
+- ✅ Import-Validierung aller Module
+- ✅ Dependency-Graph-Analyse für zirkuläre Abhängigkeiten
+- ✅ Schema-Vollständigkeits-Check
+```
+
+#### Mandatory Dependency Checks
+- **🚫 VERBOTEN:** Service-Build ohne vollständige Dependency-Validierung
+- **✅ PFLICHT:** Alle `ImportError` und `ModuleNotFoundError` MÜSSEN vor Build behoben sein
+- **✅ PFLICHT:** Alle Schema-Klassen MÜSSEN vollständig definiert sein
+- **✅ PFLICHT:** Alle Middleware-Module MÜSSEN existieren und funktional sein
+
+### 🚀 2. Robuste Startup-Sequenz (PFLICHT)
+
+#### Health-Check-Staging (Mehrstufig)
+```yaml
+# ZWINGEND für alle Services
+healthcheck:
+  test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/v1/health/')"]
+  interval: 15s
+  timeout: 10s
+  retries: 5
+  start_period: 30s
+```
+
+#### Startup-Resilience (Mandatory)
+- **✅ PFLICHT:** Graceful Degradation bei partiellen Dependency-Fehlern
+- **✅ PFLICHT:** Retry-Mechanismen für alle External Dependencies
+- **✅ PFLICHT:** Konfigurierbare Timeouts (min. 30s start_period)
+- **🚫 VERBOTEN:** `SystemExit: 1` ohne Retry-Logik
+- **🚫 VERBOTEN:** Service-Start ohne Health-Check-Validierung
+
+### 🐳 3. Container-Orchestration-Standards (PFLICHT)
+
+#### Docker-Compose Requirements
+```yaml
+# ZWINGEND für alle Services
+depends_on:
+  postgres:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+  rabbitmq:
+    condition: service_healthy
+
+restart: unless-stopped
+```
+
+#### Container-Stability (Mandatory)
+- **✅ PFLICHT:** Multi-stage Docker Build mit Dependency-Validation
+- **✅ PFLICHT:** Health-Checks MÜSSEN vor Service-Ready funktionieren
+- **🚫 VERBOTEN:** Container ohne `condition: service_healthy` Dependencies
+- **🚫 VERBOTEN:** Restart-Loops ohne Root-Cause-Analysis
+
+### 🧪 4. Automated Testing Pipeline (PFLICHT)
+
+#### Pre-Commit Validation (Automatisiert)
+- **✅ PFLICHT:** Import-Validierung und Syntax-Checks
+- **✅ PFLICHT:** Schema-Completeness-Tests
+- **✅ PFLICHT:** Middleware-Functionality-Tests
+- **✅ PFLICHT:** Health-Check-Endpoint-Tests
+
+#### Integration Testing (Mandatory)
+- **✅ PFLICHT:** Vollständige Service-Startup-Tests in isolierter Umgebung
+- **✅ PFLICHT:** Dependency-Health-Validation vor Service-Tests
+- **✅ PFLICHT:** 24h+ Stability-Tests vor Production-Release
+- **🚫 VERBOTEN:** Production-Deployment ohne Integration-Tests
+
+### 📋 5. Service Template Framework (STANDARDISIERT)
+
+#### Mandatory Project Structure
+```
+service-name/
+├── app/
+│   ├── core/
+│   │   ├── middleware.py      # ✅ PFLICHT: Vollständig implementiert
+│   │   ├── database.py        # ✅ PFLICHT: Mit asyncpg für PostgreSQL
+│   │   ├── config.py          # ✅ PFLICHT: Umfassende Settings
+│   │   └── exceptions.py      # ✅ PFLICHT: Strukturierte Error-Handling
+│   ├── models/
+│   │   └── schemas.py         # ✅ PFLICHT: Alle Health-Check-Schemas
+│   └── api/
+│       └── v1/
+│           └── health.py      # ✅ PFLICHT: Mehrstufige Health-Checks
+├── requirements.txt           # ✅ PFLICHT: Vollständige Dependencies
+├── Dockerfile                 # ✅ PFLICHT: Multi-stage mit Validation
+└── docker-compose.yml         # ✅ PFLICHT: Mit Health-Check-Dependencies
+```
+
+#### Template-Requirements (Mandatory)
+- **✅ PFLICHT:** Standardisierte Middleware-Pipeline (Logging, Metrics, Security, Rate Limiting)
+- **✅ PFLICHT:** Vorkonfigurierte Health-Check-Schemas (`ServiceStatus`, `ComponentHealth`, etc.)
+- **✅ PFLICHT:** Async-Database-Integration mit korrekten Drivers
+- **🚫 VERBOTEN:** Service-Entwicklung ohne Template-Basis
+
+### 📊 6. Monitoring und Alerting (PFLICHT)
+
+#### Startup-Monitoring (Detailliert)
+- **✅ PFLICHT:** Strukturiertes Logging für jeden Startup-Schritt
+- **✅ PFLICHT:** Dependency-Health-Tracking in Real-Time
+- **✅ PFLICHT:** Import-Error-Detection mit sofortiger Benachrichtigung
+- **✅ PFLICHT:** Container-Restart-Monitoring mit Root-Cause-Logging
+
+#### Proactive Alerting (Automatisiert)
+- **✅ PFLICHT:** Frühwarnsystem für potentielle Service-Instabilitäten
+- **✅ PFLICHT:** Dependency-Failure-Alerts vor Service-Impact
+- **✅ PFLICHT:** Health-Check-Degradation-Monitoring
+- **🚫 VERBOTEN:** Reactive-Only-Monitoring ohne Predictive-Alerts
+
+### ⚖️ 7. Compliance und Enforcement (VERBINDLICH)
+
+#### Code-Review-Requirements
+- **✅ PFLICHT:** Alle Service-PRs MÜSSEN Dependency-Validation-Report enthalten
+- **✅ PFLICHT:** Health-Check-Test-Results MÜSSEN vor Merge vorliegen
+- **✅ PFLICHT:** 24h+ Stability-Proof MÜSSEN dokumentiert sein
+- **🚫 VERBOTEN:** Merge ohne vollständige Compliance-Validierung
+
+#### Production-Readiness-Criteria
+- **✅ PFLICHT:** Service MUSS 72h+ ohne Restart laufen
+- **✅ PFLICHT:** Alle Health-Checks MÜSSEN dauerhaft "healthy" zeigen
+- **✅ PFLICHT:** Keine ImportError oder ModuleNotFoundError in Logs
+- **✅ PFLICHT:** Container-Status MUSS "Up X time (healthy)" sein
+- **🚫 VERBOTEN:** Production-Release ohne diese Kriterien
+
+---
+
+**🎯 ERFOLGS-METRIKEN:** Diese Regeln haben bereits beim User Management Service zu 100% Stabilität geführt. Alle zukünftigen Services MÜSSEN diese Standards einhalten, um die gleiche Robustheit zu erreichen.
+
 ### 🎯 Neue Architektur-Ebenen
 ```
 ┌─────────────────────────────────────┐
