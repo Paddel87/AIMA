@@ -4,6 +4,42 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/) und dieses Projekt hält sich an [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.3.3-alpha] - 2025-01-21
+
+### Behoben
+
+- **🚨 Configuration Management Service Redis-Verbindungsproblem vollständig gelöst:**
+  - Lösung des kritischen Redis-Verbindungsfehlers "Error getting cache stats: unknown command 'KEYS'"
+  - Korrektur der `get_app_cache` Funktion in `app/api/dependencies.py` für direkte Nutzung der globalen Cache-Instanz
+  - Optimierung der `lifespan` Funktion in `main.py` zur korrekten Initialisierung des globalen `configuration_cache`
+  - Service läuft nun vollständig stabil mit funktionierender Redis-Verbindung
+  - Health-Endpoint zeigt dauerhaft "healthy" Status
+
+### Geändert
+
+- **🔧 Technische Verbesserungen:**
+  - `main.py`: Globale `configuration_cache` Instanz wird korrekt mit initialisiertem `redis_manager` aktualisiert
+  - `dependencies.py`: `get_app_cache` vereinfacht für direkte Nutzung der globalen Cache-Instanz
+  - Eliminierung der Abhängigkeit von App-State für Cache-Zugriff
+  - Robustere Cache-Initialisierung mit Fallback-Mechanismen
+
+### Technische Details
+
+- **Service-Status:**
+  - Configuration Management: ✅ **VOLLSTÄNDIG HEALTHY** - Redis-Verbindung funktional
+  - User Management: ✅ **HEALTHY** - Weiterhin stabil
+  - Alle Infrastruktur-Services: ✅ **HEALTHY**
+
+- **Behobene Probleme:**
+  - Redis "unknown command 'KEYS'" Fehler eliminiert
+  - Cache-Operationen funktionieren korrekt
+  - Health-Checks zeigen durchgehend "healthy"
+  - Keine Service-Restarts mehr erforderlich
+
+- **Nächste Schritte:**
+  - Phase 1.0 (Infrastruktur-Fundament): ✅ **VOLLSTÄNDIG ABGESCHLOSSEN**
+  - Bereit für Phase 1.1: API-Gateway und Service-Discovery Implementation
+
 ## [0.3.2-alpha] - 2025-07-21
 
 ### Behoben

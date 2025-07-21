@@ -63,11 +63,13 @@ async def lifespan(app: FastAPI):
         
         # Phase 2: Redis initialization
         logger.info("Phase 2: Initializing Redis connection...")
-        redis_manager = RedisManager()
+        from app.core.redis import redis_manager, configuration_cache
         await redis_manager.initialize()
         
         if redis_manager.is_connected():
             logger.info("✓ Redis initialized successfully")
+            # Update the global configuration_cache to use the initialized redis_manager
+            configuration_cache.redis_manager = redis_manager
         else:
             logger.warning("⚠ Redis initialization failed - running without cache")
         
@@ -77,6 +79,7 @@ async def lifespan(app: FastAPI):
         # Store managers in app state
         app.state.db_manager = db_manager
         app.state.redis_manager = redis_manager
+        app.state.configuration_cache = configuration_cache
         
         logger.info("✓ Configuration service validated")
         
@@ -88,6 +91,7 @@ async def lifespan(app: FastAPI):
         
         # Graceful cleanup on startup failure
         try:
+            from app.core.redis import redis_manager
             if redis_manager:
                 await redis_manager.close()
             if db_manager:
@@ -104,6 +108,7 @@ async def lifespan(app: FastAPI):
     
     try:
         # Graceful shutdown in reverse order
+        from app.core.redis import redis_manager
         if redis_manager:
             logger.info("Disconnecting Redis...")
             await redis_manager.close()

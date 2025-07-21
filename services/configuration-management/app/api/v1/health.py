@@ -20,7 +20,7 @@ from app.core.database import get_db, DatabaseManager
 from app.core.redis import get_cache, ConfigurationCache
 from app.models.schemas import HealthCheckResponse, MetricsResponse
 from app.services.config_service import ConfigurationService
-from app.api.dependencies import get_optional_user, require_admin
+from app.api.dependencies import get_optional_user, require_admin, get_app_cache
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -39,7 +39,7 @@ START_TIME = time.time()
 )
 async def health_check(
     db: Session = Depends(get_db),
-    cache: ConfigurationCache = Depends(get_cache),
+    cache: ConfigurationCache = Depends(get_app_cache),
     current_user: Dict[str, Any] = Depends(get_optional_user)
 ) -> HealthCheckResponse:
     """Perform a comprehensive health check of the service."""
@@ -150,7 +150,7 @@ async def health_check(
 )
 async def readiness_check(
     db: Session = Depends(get_db),
-    cache: ConfigurationCache = Depends(get_cache)
+    cache: ConfigurationCache = Depends(get_app_cache)
 ) -> Dict[str, Any]:
     """Check if the service is ready to handle requests."""
     try:
@@ -227,7 +227,7 @@ async def liveness_check() -> Dict[str, Any]:
 )
 async def get_service_metrics(
     db: Session = Depends(get_db),
-    cache: ConfigurationCache = Depends(get_cache),
+    cache: ConfigurationCache = Depends(get_app_cache),
     current_user: Dict[str, Any] = Depends(require_admin)
 ) -> MetricsResponse:
     """Get comprehensive service metrics (admin only)."""

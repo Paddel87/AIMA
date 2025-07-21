@@ -9,7 +9,7 @@ including authentication, authorization, and service dependencies.
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 import jwt
@@ -17,7 +17,7 @@ import httpx
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.redis import get_cache
+from app.core.redis import get_cache, ConfigurationCache
 from app.services.config_service import ConfigurationService
 
 logger = logging.getLogger(__name__)
@@ -210,9 +210,24 @@ async def require_role(required_role: str):
     return role_checker
 
 
+async def get_app_cache(request: Request) -> ConfigurationCache:
+    """
+    Get the initialized cache instance from app state or global instance.
+    
+    Args:
+        request: FastAPI request object
+        
+    Returns:
+        Initialized ConfigurationCache instance
+    """
+    # Always use the global instance which gets updated during startup
+    from app.core.redis import configuration_cache
+    return configuration_cache
+
+
 def get_config_service(
     db: Session = Depends(get_db),
-    cache = Depends(get_cache)
+    cache: ConfigurationCache = Depends(get_app_cache)
 ) -> ConfigurationService:
     """
     Get configuration service instance.
