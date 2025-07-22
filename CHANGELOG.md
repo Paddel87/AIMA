@@ -4,6 +4,53 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/) und dieses Projekt hält sich an [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.3.4-alpha] - 2025-07-22
+
+### Hinzugefügt
+
+- **🚀 Docker Startup Optimierung implementiert:**
+  - Vollständige Optimierung der Docker-Service-Startreihenfolge für AIMA-Services
+  - Hinzufügung von Health-Checks für RabbitMQ, MinIO, User Management und Configuration Management Services
+  - Implementierung optimierter Service-Dependencies mit `service_healthy` statt `service_started`
+  - Hinzufügung von `restart: unless-stopped` Policies für verbesserte Fault-Tolerance
+  - Dokumentation der Optimierungen in `DOCKER_STARTUP_OPTIMIERUNG.md`
+
+### Behoben
+
+- **🔧 Service-Startup-Probleme gelöst:**
+  - Eliminierung von User Management Service Restart-Loops durch fehlende RabbitMQ-Verbindung
+  - Korrektur der Health-Check-URLs mit korrekten Trailing Slashes
+  - Optimierte Startup-Reihenfolge: Infrastructure → Exporter → Application Services
+  - Zuverlässige Service-Abhängigkeiten ohne Race Conditions
+
+### Geändert
+
+- **📋 Verbesserte Service-Konfiguration:**
+  - Health-Check-Konfigurationen für alle kritischen Services
+  - Optimierte Timeout-Werte: Infrastructure (60s), Exporter (45s), Application (90s)
+  - Robuste Fehlerbehandlung und automatische Wiederherstellung
+  - Bessere Monitoring-Integration für Service-Status
+
+### Technische Details
+
+- **Optimierte Startup-Reihenfolge:**
+  - **Infrastructure Services**: PostgreSQL, MongoDB, Redis, RabbitMQ, MinIO
+  - **Exporter Services**: PostgreSQL-Exporter, Redis-Exporter, MongoDB-Exporter
+  - **Application Services**: User Management, Configuration Management
+  - **Gateway & Monitoring**: Traefik, Prometheus, Grafana
+
+- **Health-Check-Implementierung:**
+  - RabbitMQ: `rabbitmq-diagnostics ping`
+  - MinIO: `curl -f http://localhost:9000/minio/health/live`
+  - User Management: `curl -f http://localhost:8000/api/v1/health/`
+  - Configuration Management: `curl -f http://localhost:8002/health`
+
+- **Ergebnisse:**
+  - ✅ Zuverlässiger Service-Start ohne Restart-Loops
+  - ✅ Funktionale Health-Checks für alle Services
+  - ✅ Verbesserte Fault-Tolerance und automatische Wiederherstellung
+  - ✅ Reduzierte Startup-Fehler und bessere Monitoring
+
 ## [0.3.3-alpha] - 2025-01-21
 
 ### Behoben
