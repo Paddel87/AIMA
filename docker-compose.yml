@@ -128,6 +128,13 @@ services:
       - "9001:9001"
     networks:
       - aima-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
 
   # RabbitMQ Message Broker
   rabbitmq:
@@ -143,6 +150,13 @@ services:
       - "15672:15672"  # Management UI
     networks:
       - aima-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
 
   # Prometheus Monitoring
   prometheus:
@@ -271,11 +285,17 @@ services:
       redis:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./services/user-management/logs:/app/logs
     networks:
       - aima-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -311,11 +331,17 @@ services:
       redis:
         condition: service_healthy
       user-management:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./services/configuration-management/logs:/app/logs
     networks:
       - aima-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
