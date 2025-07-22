@@ -1,6 +1,6 @@
 # AIMA - AI Media Analysis
 
-[![Version](https://img.shields.io/badge/version-0.3.4--alpha-blue.svg)](https://github.com/Paddel87/AIMA/releases/tag/v0.3.4-alpha)
+[![Version](https://img.shields.io/badge/version-0.5.0--alpha-blue.svg)](https://github.com/Paddel87/AIMA/releases/tag/v0.5.0-alpha)
 [![License](https://img.shields.io/badge/license-TBD-lightgrey.svg)](#)
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
@@ -84,7 +84,9 @@ Dieses Projekt folgt einem **Vision Driven Development**-Ansatz, bei dem eine KI
 AIMA/
 ├── services/                          # Microservices
 │   ├── user-management/               # Benutzerverwaltung
-│   └── configuration-management/      # Konfigurationsverwaltung
+│   ├── configuration-management/      # Konfigurationsverwaltung
+│   ├── gpu-orchestration/             # GPU-Orchestrierung & Cloud-Management
+│   └── media-lifecycle-management/    # Medien-Lifecycle-Verwaltung
 ├── database/                          # Datenbankinitialisierung
 │   └── init/
 ├── monitoring/                        # Überwachung & Metriken
@@ -146,8 +148,10 @@ AIMA/
 - ✅ **Docker Startup Optimierung**: Health-Checks und Service-Dependencies implementiert
 - ✅ **Media Lifecycle Management**: Vollständige Service-Suite mit 14 spezialisierten Modulen
 - ✅ **Service Integration**: Audit, Monitoring, Security, Caching und Rate Limiting Services
-- ⏳ **ML-Pipeline**: In Entwicklung
-- ⏳ **GPU-Integration**: Geplant
+- ✅ **GPU Orchestration Service**: Multi-Cloud-GPU-Provider-Integration implementiert
+- ✅ **Container-Orchestrierung**: Docker Multi-Stage Builds und Kubernetes-Integration
+- ⏳ **ML-Pipeline**: LLaVA-Integration in Vorbereitung
+- ⏳ **GPU-Job-Scheduling**: In Entwicklung
 - ⏳ **Testing**: Geplant
 
 ## 🚀 Schnellstart

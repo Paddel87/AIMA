@@ -1,0 +1,438 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aima-gpu-orchestration"
+version = "1.0.0"
+description = "AIMA GPU Orchestration Service - Intelligent GPU resource management and workload orchestration"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "AIMA Development Team", email = "dev@aima.ai"},
+]
+maintainers = [
+    {name = "AIMA Development Team", email = "dev@aima.ai"},
+]
+keywords = [
+    "gpu", "orchestration", "kubernetes", "cloud", "ai", "ml", "machine-learning",
+    "deep-learning", "distributed-computing", "resource-management", "scheduling",
+    "fastapi", "async", "microservices", "docker", "terraform", "prometheus",
+    "grafana", "monitoring", "observability", "cost-optimization", "auto-scaling",
+    "multi-cloud", "hybrid-cloud", "edge-computing", "serverless", "containers",
+    "devops", "infrastructure", "automation", "cicd", "deployment", "scaling",
+    "performance", "optimization", "analytics", "metrics", "logging", "tracing",
+    "security", "compliance", "governance", "policy", "rbac", "authentication",
+    "authorization", "encryption", "privacy", "nvidia", "cuda", "tensor",
+    "pytorch", "tensorflow", "transformers", "llm", "nlp", "computer-vision",
+    "reinforcement-learning", "federated-learning", "model-serving", "inference",
+    "training", "fine-tuning", "hyperparameter", "experiment-tracking",
+    "model-registry", "mlops", "aiops", "dataops",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Science/Research",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: System :: Clustering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Framework :: FastAPI",
+    "Framework :: AsyncIO",
+    "Environment :: Web Environment",
+    "Environment :: Console",
+    "Natural Language :: English",
+]
+dependencies = [
+    # Core web framework and server
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "gunicorn>=21.2.0",
+    
+    # Database and ORM
+    "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.29.0",
+    "psycopg2-binary>=2.9.9",
+    "alembic>=1.13.0",
+    
+    # Redis and caching
+    "redis[hiredis]>=5.0.0",
+    "aioredis>=2.0.0",
+    
+    # HTTP clients
+    "httpx>=0.25.0",
+    "aiohttp>=3.9.0",
+    "requests>=2.31.0",
+    
+    # Data validation and serialization
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "marshmallow>=3.20.0",
+    "jsonschema>=4.20.0",
+    
+    # Configuration and environment
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.1",
+    "toml>=0.10.2",
+    
+    # Authentication and security
+    "bcrypt>=4.1.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.6",
+    
+    # Monitoring and observability
+    "prometheus-client>=0.19.0",
+    "sentry-sdk[fastapi]>=1.38.0",
+    "structlog>=23.2.0",
+    "loguru>=0.7.0",
+    
+    # Cloud providers
+    "boto3>=1.34.0",
+    "kubernetes>=28.1.0",
+    "docker>=6.1.0",
+    
+    # Task queue and background jobs
+    "celery[redis]>=5.3.0",
+    "dramatiq[redis,watch]>=1.15.0",
+    "rq>=1.15.0",
+    "apscheduler>=3.10.0",
+    
+    # Utilities
+    "click>=8.1.0",
+    "rich>=13.7.0",
+    "typer>=0.9.0",
+    "tenacity>=8.2.0",
+    "aiofiles>=23.2.0",
+    "jinja2>=3.1.0",
+    "python-slugify>=8.0.0",
+    "email-validator>=2.1.0",
+    
+    # Data processing
+    "pandas>=2.1.0",
+    "numpy>=1.25.0",
+    "scipy>=1.11.0",
+    
+    # Visualization
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+    "plotly>=5.17.0",
+    
+    # Progress and UI
+    "tqdm>=4.66.0",
+    "colorama>=0.4.6",
+    "termcolor>=2.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "black>=23.11.0",
+    "isort>=5.12.0",
+    "flake8>=6.1.0",
+    "mypy>=1.7.0",
+    "bandit>=1.7.5",
+    "safety>=2.3.5",
+    "pre-commit>=3.5.0",
+    "jupyter>=1.0.0",
+    "ipython>=8.17.0",
+    "debugpy>=1.8.0",
+]
+
+test = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "factory-boy>=3.3.0",
+    "faker>=20.1.0",
+    "httpx>=0.25.0",
+    "locust>=2.17.0",
+]
+
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+    "sphinx>=7.2.0",
+    "sphinx-rtd-theme>=1.3.0",
+]
+
+gpu = [
+    "torch>=2.1.0",
+    "transformers>=4.35.0",
+    "nvidia-ml-py>=12.535.0",
+    "pynvml>=11.5.0",
+    "tensorrt>=8.6.0",
+    "onnx>=1.15.0",
+]
+
+ml = [
+    "mlflow>=2.8.0",
+    "optuna>=3.4.0",
+    "scikit-learn>=1.3.0",
+    "xgboost>=2.0.0",
+    "lightgbm>=4.1.0",
+    "catboost>=1.2.0",
+]
+
+cloud = [
+    "boto3>=1.34.0",
+    "kubernetes>=28.1.0",
+    "python-terraform>=0.10.0",
+    "docker>=6.1.0",
+    "ansible>=8.7.0",
+    "google-cloud-aiplatform>=1.38.0",
+    "azure-ai-ml>=1.11.0",
+]
+
+monitoring = [
+    "prometheus-client>=0.19.0",
+    "grafana-api>=1.0.0",
+    "influxdb-client[async]>=1.38.0",
+    "elasticsearch>=8.11.0",
+    "opentelemetry-api>=1.21.0",
+    "opentelemetry-sdk>=1.21.0",
+    "opentelemetry-instrumentation-fastapi>=0.42b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.42b0",
+    "opentelemetry-instrumentation-redis>=0.42b0",
+    "opentelemetry-instrumentation-httpx>=0.42b0",
+    "opentelemetry-exporter-jaeger>=1.21.0",
+    "opentelemetry-exporter-prometheus>=1.12.0rc1",
+]
+
+all = [
+    "aima-gpu-orchestration[dev,test,docs,gpu,ml,cloud,monitoring]",
+]
+
+[project.scripts]
+aima-gpu-orchestration = "app.cli:main"
+gpu-orchestration = "app.cli:main"
+aima-gpu = "app.cli:main"
+
+[project.urls]
+Homepage = "https://aima.ai"
+Documentation = "https://docs.aima.ai/gpu-orchestration"
+Repository = "https://github.com/AIMA/gpu-orchestration"
+"Bug Tracker" = "https://github.com/AIMA/gpu-orchestration/issues"
+Changelog = "https://github.com/AIMA/gpu-orchestration/blob/main/CHANGELOG.md"
+Funding = "https://github.com/sponsors/AIMA"
+
+[tool.setuptools]
+packages = ["app"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+app = [
+    "templates/*.html",
+    "templates/*.jinja2",
+    "static/*",
+    "config/*.yaml",
+    "config/*.yml",
+    "config/*.json",
+    "schemas/*.json",
+    "migrations/*.sql",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | migrations
+  )/
+)
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_glob = ["migrations/*"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "celery.*",
+    "dramatiq.*",
+    "kubernetes.*",
+    "boto3.*",
+    "botocore.*",
+    "prometheus_client.*",
+    "structlog.*",
+    "loguru.*",
+    "redis.*",
+    "aioredis.*",
+    "asyncpg.*",
+    "psycopg2.*",
+    "alembic.*",
+    "sqlalchemy.*",
+    "pydantic.*",
+    "fastapi.*",
+    "uvicorn.*",
+    "gunicorn.*",
+    "httpx.*",
+    "aiohttp.*",
+    "requests.*",
+    "click.*",
+    "rich.*",
+    "typer.*",
+    "tenacity.*",
+    "jinja2.*",
+    "marshmallow.*",
+    "jsonschema.*",
+    "bcrypt.*",
+    "passlib.*",
+    "jose.*",
+    "email_validator.*",
+    "slugify.*",
+    "pandas.*",
+    "numpy.*",
+    "scipy.*",
+    "matplotlib.*",
+    "seaborn.*",
+    "plotly.*",
+    "tqdm.*",
+    "colorama.*",
+    "termcolor.*",
+    "pytest.*",
+    "factory_boy.*",
+    "faker.*",
+    "locust.*",
+    "torch.*",
+    "transformers.*",
+    "nvidia_ml_py.*",
+    "pynvml.*",
+    "tensorrt.*",
+    "onnx.*",
+    "mlflow.*",
+    "optuna.*",
+    "sklearn.*",
+    "xgboost.*",
+    "lightgbm.*",
+    "catboost.*",
+    "docker.*",
+    "ansible.*",
+    "terraform.*",
+    "google.*",
+    "azure.*",
+    "grafana_api.*",
+    "influxdb_client.*",
+    "elasticsearch.*",
+    "opentelemetry.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m "not slow"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "gpu: marks tests that require GPU",
+    "cloud: marks tests that require cloud resources",
+    "docker: marks tests that require Docker",
+    "kubernetes: marks tests that require Kubernetes",
+    "redis: marks tests that require Redis",
+    "postgres: marks tests that require PostgreSQL",
+    "celery: marks tests that require Celery",
+    "api: marks tests for API endpoints",
+    "auth: marks tests for authentication",
+    "monitoring: marks tests for monitoring features",
+    "performance: marks performance tests",
+    "security: marks security tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/virtualenv/*",
+    "*/.venv/*",
+    "*/site-packages/*",
+    "*/dist-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\bProtocol\):",
+    "@(abc\.)?abstractmethod",
+]
+ignore_errors = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "migrations"]
+skips = ["B101", "B601"]
+
+[tool.bandit.assert_used]
+skips = ["*_test.py", "test_*.py"]
