@@ -17,7 +17,9 @@ from aima.modules.asr.whisper_asr import transcribe_audio
 from aima.modules.objects.yolo import detect_objects
 from aima.aggregator.json_aggregator import write_scene_analysis
 from aima.services.embedding_service import embed_texts
-from aima.services.vector_store import init_vector_store, add_scene
+from aima.services.vector_store import init_vector_store, add_scene, delete_by_video
+from aima.config import GLOBAL_VECTORSTORE_PATH
+import uuid
 DEFAULT_YOLO_THRESHOLD = 0.6
 
 
@@ -27,19 +29,27 @@ def _split_scenes(duration_s: float) -> List[SceneInfo]:
     start = 0.0
     while start < duration_s:
         end = min(start + 5.0, duration_s)
-        scenes.append(SceneInfo(id=i, start_s=start, end_s=end))
+        scenes.append(SceneInfo(id=i, start_s=start, end_s=end, video_id=""))
         i += 1
         start += 5.0
     return scenes
 
 
-def analyze_video(video_path: str, duration_s: float, modules: list[str], output_dir: str) -> None:
+def analyze_video(video_path: str, duration_s: float, modules: list[str], output_dir: str, video_id: str | None = None) -> str:
     os.makedirs(output_dir, exist_ok=True)
+    vid = video_id or str(uuid.uuid4())
     source = SourceInfo(path=video_path, duration_s=duration_s)
     scenes = _split_scenes(duration_s)
-    vs_path = os.path.join(output_dir, "vectorstore")
-    client = init_vector_store(vs_path)
+    for s in scenes:
+        s.video_id = vid
+    base_dir = os.path.join(output_dir, vid)
+    frames_dir = os.path.join(base_dir, "frames")
+    scenes_dir = os.path.join(base_dir, "scenes")
+    os.makedirs(frames_dir, exist_ok=True)
+    os.makedirs(scenes_dir, exist_ok=True)
+    client = init_vector_store(GLOBAL_VECTORSTORE_PATH)
     collection = client.get_or_create_collection(name="aima_scenes")
+    delete_by_video(collection, vid)
 
     audio_segments: List[AudioSegment] = []
     whisper_ok = False
@@ -61,7 +71,7 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
         ffmpeg_error: str | None = None
         frame: FrameInfo | None = None
         if need_frame:
-            frame = extract_scene_frame(video_path, scene, output_dir)
+            frame = extract_scene_frame(video_path, scene, base_dir)
             if frame is None:
                 ffmpeg_status = "error"
                 ffmpeg_error = "frame extraction failed"
@@ -117,8 +127,9 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
             objects=objects,
             models=models,
             tags=tags,
+            video_id=vid,
         )
-        out_json = os.path.join(output_dir, f"scene_{scene.id}.json")
+        out_json = os.path.join(scenes_dir, f"scene_{scene.id}.json")
         write_scene_analysis(out_json, analysis)
 
         scene_text_parts: List[str] = []
@@ -130,4 +141,17 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
         if scene_text:
             emb = embed_texts([scene_text])[0]
             tags_str = ",".join(tags)
-            add_scene(collection, scene_id=f"{scene.id}", embedding=emb, metadata={"tags": tags_str, "start": scene.start_s})
+            add_scene(
+                collection,
+                scene_id=f"{vid}:{scene.id}",
+                embedding=emb,
+                metadata={
+                    "video_id": vid,
+                    "scene_id": scene.id,
+                    "tags": tags_str,
+                    "asr": " ".join([a.text for a in audio_in_scene]) if audio_in_scene else "",
+                    "path": out_json,
+                    "start": scene.start_s,
+                },
+            )
+    return vid
