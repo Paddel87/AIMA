@@ -9,3 +9,6 @@ typer
 rich
 chromadb
 sentence-transformers
+fastapi
+uvicorn
+python-multipart
