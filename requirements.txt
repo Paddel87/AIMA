@@ -1,0 +1,11 @@
+openai-whisper
+torch
+torchvision
+torchaudio
+ultralytics
+ffmpeg-python
+pydantic
+typer
+rich
+chromadb
+sentence-transformers
