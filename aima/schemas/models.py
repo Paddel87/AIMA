@@ -10,6 +10,7 @@ class SceneInfo(BaseModel):
     id: int
     start_s: float
     end_s: float
+    video_id: str
 
 
 class FrameInfo(BaseModel):
@@ -43,3 +44,13 @@ class SceneAnalysis(BaseModel):
     objects: list[DetectedObject]
     models: list[ModelStatus]
     tags: list[str] = []
+    video_id: str
+
+
+class UploadResponse(BaseModel):
+    message: str
+    video_id: str
+    stored_path: str
+    original_filename: str
+    mime_type: str
+    size_bytes: int

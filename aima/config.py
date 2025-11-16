@@ -1,4 +1,5 @@
 import os
 
 OUTPUTS_PATH = os.path.join("outputs")
-VECTORSTORE_PATH = os.path.join(OUTPUTS_PATH, "vectorstore")
+GLOBAL_VECTORSTORE_PATH = os.path.join(OUTPUTS_PATH, "vectorstore")
+UPLOADS_PATH = os.path.join("uploads")
