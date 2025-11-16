@@ -23,3 +23,10 @@ def query(collection, text: str, top_k: int = 3):
     distances = res.get("distances", [[]])[0]
     metadatas = res.get("metadatas", [[]])[0]
     return [(ids[i], float(distances[i]), metadatas[i]) for i in range(len(ids))]
+
+
+def delete_by_video(collection, video_id: str):
+    try:
+        collection.delete(where={"video_id": video_id})
+    except Exception:
+        pass
