@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h2>Semantische Suche</h2>
+  <form method="get" action="/ui/search">
+    <input type="text" name="query" value="{{ query }}" placeholder="Suchbegriff" />
+    <input type="number" name="top_k" value="{{ top_k }}" />
+    <button type="submit">Suchen</button>
+  </form>
+</section>
+
+{% if query %}
+<section>
+  <h3>Treffer</h3>
+  <table>
+    <thead><tr><th>Score</th><th>Video</th><th>Szene</th><th>Auszug</th><th>Tags</th><th>Links</th></tr></thead>
+    <tbody>
+      {% for r in results %}
+      <tr>
+        <td>{{ r.score }}</td>
+        <td>{{ r.video_id }}</td>
+        <td>{{ r.scene_id }}</td>
+        <td>{{ r.excerpt }}</td>
+        <td>{{ r.tags }}</td>
+        <td>
+          <a href="/ui/videos/{{ r.video_id }}/scenes">Szenenübersicht</a> |
+          <a href="/scene/{{ r.video_id }}/{{ r.scene_id }}" target="_blank">JSON</a> |
+          <a href="/media/{{ r.video_id }}/frames/scene_{{ r.scene_id }}.jpg" target="_blank">Frame</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

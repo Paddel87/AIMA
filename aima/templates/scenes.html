@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h2>Szenen für Video {{ video_id }}</h2>
+  <p><a href="/ui">Zurück</a></p>
+  <table>
+    <thead><tr><th>ID</th><th>Start</th><th>Ende</th><th>Tags</th><th>OCR</th><th>Frame</th><th>JSON</th></tr></thead>
+    <tbody>
+      {% for s in scenes %}
+      <tr>
+        <td>{{ s.scene_id }}</td>
+        <td>{{ s.start_s }}</td>
+        <td>{{ s.end_s }}</td>
+        <td>{% if s.tags %}{{ ", ".join(s.tags) }}{% else %}-{% endif %}</td>
+        <td>{% if s.ocr_excerpt %}{{ s.ocr_excerpt }}{% else %}(kein OCR-Text){% endif %}</td>
+        <td>{% if s.has_frame %}<img src="{{ s.frame_path }}" alt="frame" style="max-height:80px" />{% else %}-{% endif %}</td>
+        <td><a href="/scene/{{ video_id }}/{{ s.scene_id }}" target="_blank">Details</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

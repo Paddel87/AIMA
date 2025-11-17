@@ -12,3 +12,5 @@ sentence-transformers
 fastapi
 uvicorn
 python-multipart
+easyocr
+facenet-pytorch

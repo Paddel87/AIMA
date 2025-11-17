@@ -15,6 +15,11 @@ from aima.schemas.models import (
 from aima.services.frame_extractor import extract_scene_frame
 from aima.modules.asr.whisper_asr import transcribe_audio
 from aima.modules.objects.yolo import detect_objects
+from aima.modules.ocr import perform_ocr
+from aima.modules.faces.face_pipeline import analyze_scene_frame
+from aima.schemas.models import FaceInstance
+from aima import config
+from PIL import Image
 from aima.aggregator.json_aggregator import write_scene_analysis
 from aima.services.embedding_service import embed_texts
 from aima.services.vector_store import init_vector_store, add_scene, delete_by_video
@@ -99,6 +104,40 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
                 yolo_status = "error"
                 yolo_error = str(e)
 
+        ocr_text: str | None = None
+        ocr_blocks = None
+        ocr_status = "skipped"
+        ocr_error: str | None = None
+        if ("ocr" in modules) and frame is not None:
+            try:
+                ocr_text, ocr_blocks = perform_ocr(frame.path)
+                ocr_status = "ok"
+            except Exception as e:
+                ocr_status = "error"
+                ocr_error = str(e)
+
+        faces_instances = None
+        faces_status = "skipped"
+        faces_error: str | None = None
+        if config.FACES_ENABLED_DEFAULT and frame is not None:
+            try:
+                img = Image.open(frame.path).convert("RGB")
+                face_embeddings = analyze_scene_frame(img)
+                faces_instances = []
+                for idx, fe in enumerate(face_embeddings):
+                    faces_instances.append(
+                        FaceInstance(
+                            face_id=f"{scene.id}_face_{idx}",
+                            bbox=fe.bbox,
+                            confidence=fe.confidence,
+                            embedding=fe.embedding,
+                        )
+                    )
+                faces_status = "ok"
+            except Exception as e:
+                faces_status = "error"
+                faces_error = str(e)
+
         models: List[ModelStatus] = []
         models.append(ModelStatus(name="ffmpeg_frame", status=ffmpeg_status, error=ffmpeg_error))
         if "asr" in modules:
@@ -109,6 +148,11 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
             models.append(ModelStatus(name="yolov8n", status=yolo_status, error=yolo_error))
         else:
             models.append(ModelStatus(name="yolov8n", status="skipped", error=None))
+        if "ocr" in modules:
+            models.append(ModelStatus(name="easyocr", status=ocr_status, error=ocr_error))
+        else:
+            models.append(ModelStatus(name="easyocr", status="skipped", error=None))
+        models.append(ModelStatus(name="facenet", status=faces_status, error=faces_error))
 
         yolo_tags = [o.class_name for o in objects]
         text_tokens: List[str] = []
@@ -117,7 +161,14 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
             for w in words:
                 if len(w) > 3:
                     text_tokens.append(w)
-        tags = list(dict.fromkeys(yolo_tags + text_tokens))
+        ocr_tokens: List[str] = []
+        if ocr_text:
+            words = re.findall(r"\b\w+\b", ocr_text.lower())
+            stop = {"und","oder","der","die","das","the"}
+            for w in words:
+                if len(w) > 3 and w not in stop:
+                    ocr_tokens.append(w)
+        tags = list(dict.fromkeys(yolo_tags + text_tokens + ocr_tokens))
 
         analysis = SceneAnalysis(
             source=source,
@@ -128,6 +179,9 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
             models=models,
             tags=tags,
             video_id=vid,
+            ocr_text=ocr_text,
+            ocr_blocks=ocr_blocks,
+            faces=faces_instances,
         )
         out_json = os.path.join(scenes_dir, f"scene_{scene.id}.json")
         write_scene_analysis(out_json, analysis)
@@ -137,6 +191,8 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
             scene_text_parts.append(" ".join(tags))
         if audio_in_scene:
             scene_text_parts.append(" ".join([a.text for a in audio_in_scene]))
+        if ocr_text:
+            scene_text_parts.append(ocr_text)
         scene_text = " ".join(scene_text_parts).strip()
         if scene_text:
             emb = embed_texts([scene_text])[0]
@@ -150,6 +206,7 @@ def analyze_video(video_path: str, duration_s: float, modules: list[str], output
                     "scene_id": scene.id,
                     "tags": tags_str,
                     "asr": " ".join([a.text for a in audio_in_scene]) if audio_in_scene else "",
+                    "ocr_text": ocr_text or "",
                     "path": out_json,
                     "start": scene.start_s,
                 },

@@ -13,6 +13,7 @@ AIMA ist eine modulare Offline-Videoanalyse-Pipeline, die Videos in Szenen zerle
 - ChromaDB‑Vektorspeicher pro Szene
 - Semantische Szenensuche über `search`‑Befehl
 - Status‑Dokumentation pro Modell (`ffmpeg`, `whisper`, `yolo`)
+- Gesichtserkennung (MTCNN + InceptionResnetV1) mit 512‑dim Embeddings pro Gesicht
 
 ## Projektstruktur
 ```
@@ -30,6 +31,11 @@ aima/
       yolo.py
     asr/
       whisper_asr.py
+    faces/
+      detector.py
+      encoder.py
+      face_pipeline.py
+    ocr.py
   schemas/
     models.py
   aggregator/
@@ -63,6 +69,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 Hinweis: `ffmpeg` wird portabel im Workspace eingebunden, falls nicht im System vorhanden.
+Hinweis: `facenet-pytorch` ist enthalten und benötigt eine kompatible PyTorch‑Version (bereits in `requirements.txt`).
 
 ## Nutzung
 Analyse eines Videos:
@@ -95,6 +102,10 @@ Ablauf:
 - Whisper‑Modell: `"small"` (konfigurierbar)
 - Embedding‑Modell: `"all-MiniLM-L6-v2"`
 - Vektorstore‑Pfad: `outputs/vectorstore`
+- Faces‑Defaults:
+  - `FACES_ENABLED_DEFAULT = False`
+  - `FACES_MIN_CONFIDENCE = 0.9`
+  - `FACES_MAX_PER_SCENE = 10`
 
 ## Erweiterungsideen (Roadmap)
 - OCR (PaddleOCR)
@@ -107,3 +118,34 @@ Ablauf:
 
 ## Lizenz / Hinweis
 Dieses Projekt ist ein technisches MVP und dient zu Forschungs‑ und Entwicklungszwecken.
+## API-Server
+Voraussetzungen: `fastapi`, `uvicorn` sind in `requirements.txt` enthalten.
+
+Start:
+```
+uvicorn aima.api.server:app --reload
+```
+Standard-Port: `http://127.0.0.1:8000`
+
+Dokumentation: `http://127.0.0.1:8000/docs`
+
+Beispiele:
+- POST `/analyze`
+  ```json
+  {
+    "video_path": "Tagesschau.mp4",
+    "duration": 11,
+    "modules": ["objects", "asr"]
+  }
+  ```
+- GET `/scene/{id}`
+- GET `/search?query=deutsche+fernsehen+studio&top_k=3`
+
+## Gesichtserkennung – Ausgabeformat
+- Aktivierung über `aima/config.py` (`FACES_ENABLED_DEFAULT = True`).
+- Pro Szene wird im JSON‑Report das Feld `faces` ergänzt:
+  - `face_id`: eindeutige ID pro Szene
+  - `bbox`: `[x1, y1, x2, y2]`
+  - `confidence`: Erkennungs‑Confidence
+  - `embedding`: Liste mit 512 Fließkommawerten (InceptionResnetV1)
+- Fehlerrobust: Falls kein Gesicht erkannt wird, bleibt `faces` leer und der `facenet`‑Status im `models`‑Block dokumentiert den Schritt.
