@@ -1,6 +1,7 @@
 import os
 import json
 from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form, BackgroundTasks, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -16,8 +17,26 @@ from aima.config import OUTPUTS_PATH, UPLOADS_PATH
 
 
 app = FastAPI(title="AIMA API", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/static", StaticFiles(directory="aima/static"), name="static")
 templates = Jinja2Templates(directory="aima/templates")
+from aima.api.routers.videos import router as videos_router
+from aima.api.routers.scenes import router as scenes_router
+from aima.api.routers.persons import router as persons_router
+from aima.api.routers.search import router as search_router
+from aima.api.routers.jobs import router as jobs_router
+from aima.api.routers.upload import router as upload_router
+app.include_router(videos_router)
+app.include_router(scenes_router)
+app.include_router(persons_router)
+app.include_router(search_router)
+app.include_router(jobs_router)
+app.include_router(upload_router)
 
 
 class AnalyzeRequest(BaseModel):
@@ -176,6 +195,10 @@ def media_frame(video_id: str, filename: str):
     if not os.path.exists(fpath):
         raise HTTPException(status_code=404, detail="file not found")
     return FileResponse(fpath, media_type="image/jpeg")
+
+@app.get("/api/v1/status")
+def api_status():
+    return {"status": "ok"}
 
 
 @app.get("/ui")
