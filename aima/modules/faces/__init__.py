@@ -1,1 +1,0 @@
-"""Faces module package"""

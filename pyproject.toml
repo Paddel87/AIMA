@@ -1,0 +1,86 @@
+[project]
+name = "aima"
+version = "0.0.0"
+description = "AIMA – AI Media Analysis System"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+authors = [{ name = "Paddel87" }]
+dependencies = [
+    "pydantic>=2.7,<3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "pytest>=8.2",
+    "pre-commit>=4.0",
+    "commitizen>=4.1",
+]
+
+[tool.uv]
+# AIMA ist eine Applikation, kein zu publizierendes Package → kein Build-Backend nötig.
+package = false
+
+# ----------------------------------------------------------------------------
+# Ruff (Lint + Format)
+# ----------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["backend", "scripts", "tests"]
+# Stellt sicher, dass `exclude` auch bei explizit uebergebenen Pfaden greift
+# (pre-commit uebergibt Dateien einzeln) → Vertragsdateien bleiben geschuetzt.
+force-exclude = true
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "A", "B", "N", "UP", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# Vertragsdateien (CONTRIBUTING.md §6): unveränderlich, von Hand kuratiert.
+#   RUF022 – __all__ bewusst logisch (nicht alphabetisch) sortiert
+#   RUF001 – bewusstes „×" (Multiplikationszeichen) im Docstring
+#   E501   – eine bewusst lange Field-Description (105 Zeichen)
+"backend/shared/types.py" = ["RUF001", "RUF022", "E501"]
+"backend/shared/errors.py" = ["RUF022"]
+
+[tool.ruff.format]
+# Verträge sind frozen — ausgerichtete Inline-Kommentare bleiben unangetastet.
+exclude = [
+    "backend/shared/types.py",
+    "backend/shared/errors.py",
+    "backend/backends/base.py",
+]
+
+# ----------------------------------------------------------------------------
+# mypy (strict)
+# ----------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["backend", "scripts", "tests"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+# ----------------------------------------------------------------------------
+# pytest
+# ----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"
+
+# ----------------------------------------------------------------------------
+# commitizen (Conventional Commits)
+# ----------------------------------------------------------------------------
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.0"
+tag_format = "v$version"
+version_scheme = "semver"
+update_changelog_on_bump = false

@@ -1,151 +1,69 @@
-# AIMA – AI Media Analysis Pipeline (MVP)
+# AIMA
 
-## Projektübersicht
-AIMA ist eine modulare Offline-Videoanalyse-Pipeline, die Videos in Szenen zerlegt und für jede Szene Frames, Audios (ASR), Objektdetektionen, Tags und JSON-Reports erzeugt. Zusätzlich werden pro Szene Embeddings erstellt und persistent in einem Vektorstore gespeichert, um semantische Suche zu ermöglichen. Der Fokus liegt auf lokaler Verarbeitung, klarer Struktur und einfacher Erweiterbarkeit.
+**AI Media Analysis System** — modulares KI-gestütztes Medienanalyse- und Auswertungssystem zur automatisierten Erkennung, Wiedererkennung, Kontextbewertung und semantischen Zusammenführung von Bild- und Videoinhalten.
 
-## Funktionsumfang
-- Szenenerkennung (feste 5‑Sekunden‑Fenster)
-- Frame‑Extraktion per `ffmpeg` (Mitte der Szene)
-- Whisper ASR mit segmentgenauer Szenenzuordnung
-- YOLOv8 Objekterkennung (konfigurierbarer Confidence‑Threshold)
-- Tag‑Generierung aus Objekten + ASR‑Texten
-- Embeddings per SentenceTransformer (`all-MiniLM-L6-v2`)
-- ChromaDB‑Vektorspeicher pro Szene
-- Semantische Szenensuche über `search`‑Befehl
-- Status‑Dokumentation pro Modell (`ffmpeg`, `whisper`, `yolo`)
-- Gesichtserkennung (MTCNN + InceptionResnetV1) mit 512‑dim Embeddings pro Gesicht
+> **Projektstatus:** Phase 0 — Repo-Setup & Konventionen. Kein lauffähiger Code, nur Rahmen.
+> Aktueller Tag: —
+> Details siehe [FAHRPLAN.md](FAHRPLAN.md).
 
-## Projektstruktur
+---
+
+## Was ist das?
+
+AIMA analysiert Bild- und Videomaterial mit mehreren spezialisierten KI-Modulen (Personenerkennung, Re-Identifizierung, Objekterkennung, NSFW-Klassifikation, Kontextanalyse, Bildbeschreibung) und führt die Einzelbefunde zu einem verwertbaren Gesamtbild zusammen. Vollständig browserbasiert, DSGVO-konform, für 2–3 gleichzeitige Nutzer ausgelegt.
+
+Die Architektur in einem Satz: FastAPI + Celery + Redis + PostgreSQL auf einem VPS, React-Frontend, GPU-Analyse über RunPod Serverless, optionale externe APIs (Google AI Studio, xAI) für nicht-sensible Module.
+
+Für das volle Bild → [KONZEPT.md](KONZEPT.md).
+
+## Schnellstart
+
+**Voraussetzungen:** Python ≥ 3.12, `uv`, Node ≥ 20, Docker + Compose v2, `gh`.
+
+```bash
+# Klonen und einrichten
+git clone git@github.com:Paddel87/AIMA.git
+cd aima
+uv sync
+cd frontend && npm install && cd ..
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+cp .env.example .env  # dann lokale Werte eintragen
+
+# Lokale Laufzeitumgebung starten (ab Phase 1)
+docker compose up
+
+# Smoketest
+uv run ruff check .
+uv run mypy .
+uv run pytest
 ```
-aima/
-  cli/
-    main.py
-  pipelines/
-    analyzer.py
-  services/
-    frame_extractor.py
-    embedding_service.py
-    vector_store.py
-  modules/
-    objects/
-      yolo.py
-    asr/
-      whisper_asr.py
-    faces/
-      detector.py
-      encoder.py
-      face_pipeline.py
-    ocr.py
-  schemas/
-    models.py
-  aggregator/
-    json_aggregator.py
-outputs/
-  ... (bei Ausführung erzeugt)
-Tagesschau.mp4 (Beispieldatei)
-requirements.txt
-README.md
-```
-- `aima/cli/`: CLI‑Befehle (`analyze`, `search`)
-- `aima/pipelines/`: Orchestrierung der End‑to‑End‑Analyse
-- `aima/services/`: Dienste (Frame‑Extraktion, Embeddings, Vectorstore)
-- `aima/modules/`: Modell‑Module (Objekterkennung, ASR)
-- `aima/schemas/`: Pydantic‑Modelle und Szenen‑Schemas
-- `aima/aggregator/`: Ausgabe/Serialization nach JSON
-- `outputs/`: Ergebnisse (Frames, JSONs, Vectorstore)
 
-## Installation
-Virtuelle Umgebung (Host bleibt sauber):
-```
-python -m venv .venv
-# Linux/macOS:
-source .venv/bin/activate
-# Windows PowerShell:
-.venv\Scripts\Activate.ps1
-```
-Abhängigkeiten:
-```
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-Hinweis: `ffmpeg` wird portabel im Workspace eingebunden, falls nicht im System vorhanden.
-Hinweis: `facenet-pytorch` ist enthalten und benötigt eine kompatible PyTorch‑Version (bereits in `requirements.txt`).
+Volle Setup-Anleitung → [CONTRIBUTING.md §1](CONTRIBUTING.md).
 
-## Nutzung
-Analyse eines Videos:
-```
-python -m aima.cli.main analyze Tagesschau.mp4 --duration 11 --modules objects,asr --out outputs
-```
-Erklärung:
-- `analyze`: führt die komplette Pipeline aus
-- `duration`: zu analysierende Videolänge
-- `modules`: welche Module aktiv sind (z. B. `objects,asr`)
-- `out`: Ausgabeverzeichnis
+## Dokumentation
 
-Beispielausgabe:
-- `outputs/scene_0.json`
-- `outputs/frames/scene_0.jpg`
-- `outputs/scene_1.json`, `outputs/frames/scene_1.jpg` usw.
+| Datei                              | Inhalt                                                       |
+| ---------------------------------- | ------------------------------------------------------------ |
+| [CLAUDE.md](CLAUDE.md)             | Nord-Stern für jede Claude-Code-Session — zuerst lesen       |
+| [KONZEPT.md](KONZEPT.md)           | Architektur, Datenmodell, Systemgrenzen                      |
+| [FAHRPLAN.md](FAHRPLAN.md)         | Phasenplan + Status + Akzeptanzkriterien                     |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, Branches, Commits, CI, PR- und Phasen-Ritual          |
+| [CHANGELOG.md](CHANGELOG.md)       | Änderungshistorie nach Keep-a-Changelog                      |
 
-## Semantische Suche
-Befehl:
-```
-python -m aima.cli.main search "deutsche fernsehen studio" --top_k 3
-```
-Ablauf:
-- Embedding der Query
-- ChromaDB‑Abfrage
-- Ausgabe: Szenen‑IDs, Scores, zugehörige JSONs
+## Stack
 
-## Konfiguration
-- YOLO‑Threshold: `DEFAULT_YOLO_THRESHOLD = 0.6`
-- Whisper‑Modell: `"small"` (konfigurierbar)
-- Embedding‑Modell: `"all-MiniLM-L6-v2"`
-- Vektorstore‑Pfad: `outputs/vectorstore`
-- Faces‑Defaults:
-  - `FACES_ENABLED_DEFAULT = False`
-  - `FACES_MIN_CONFIDENCE = 0.9`
-  - `FACES_MAX_PER_SCENE = 10`
+- **Backend:** Python 3.12, FastAPI, Celery, Redis, SQLAlchemy, Alembic
+- **Frontend:** React, Vite, TypeScript, React Query, Zustand
+- **Datenbank:** PostgreSQL 16 + pgvector
+- **Auth:** JWT, Rollen Admin / Analyst
+- **KI-Backends:** RunPod Serverless (sensible Module), Google AI Studio / xAI (nur optionale Kontextmodule)
+- **Deployment:** Docker Compose auf VPS, Nginx als Reverse Proxy
 
-## Erweiterungsideen (Roadmap)
-- OCR (PaddleOCR)
-- Gesichtserkennung (InsightFace)
-- Pose Tracking
-- automatische Szenenerkennung
-- LLM‑basierte Query‑Reformulierung
-- Web‑Frontend
-- Docker‑Containerisierung
+## Entwicklungsmodell
 
-## Lizenz / Hinweis
-Dieses Projekt ist ein technisches MVP und dient zu Forschungs‑ und Entwicklungszwecken.
-## API-Server
-Voraussetzungen: `fastapi`, `uvicorn` sind in `requirements.txt` enthalten.
+Vision-Driven Development mit autonomer KI-Implementierung. Die Spezifikation und die Vertragsdateien sind der Input, aus dem Code entsteht. Details zur Arbeitsweise in [CLAUDE.md](CLAUDE.md).
 
-Start:
-```
-uvicorn aima.api.server:app --reload
-```
-Standard-Port: `http://127.0.0.1:8000`
+## Lizenz
 
-Dokumentation: `http://127.0.0.1:8000/docs`
-
-Beispiele:
-- POST `/analyze`
-  ```json
-  {
-    "video_path": "Tagesschau.mp4",
-    "duration": 11,
-    "modules": ["objects", "asr"]
-  }
-  ```
-- GET `/scene/{id}`
-- GET `/search?query=deutsche+fernsehen+studio&top_k=3`
-
-## Gesichtserkennung – Ausgabeformat
-- Aktivierung über `aima/config.py` (`FACES_ENABLED_DEFAULT = True`).
-- Pro Szene wird im JSON‑Report das Feld `faces` ergänzt:
-  - `face_id`: eindeutige ID pro Szene
-  - `bbox`: `[x1, y1, x2, y2]`
-  - `confidence`: Erkennungs‑Confidence
-  - `embedding`: Liste mit 512 Fließkommawerten (InceptionResnetV1)
-- Fehlerrobust: Falls kein Gesicht erkannt wird, bleibt `faces` leer und der `facenet`‑Status im `models`‑Block dokumentiert den Schritt.
+Proprietär. Kein Teil dieses Repositorys darf ohne explizite Zustimmung des Eigentümers kopiert, weitergegeben oder veröffentlicht werden.
