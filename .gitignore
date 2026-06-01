@@ -1,8 +1,43 @@
-.venv/
-outputs/
-tools/
-yolov8n.pt
-Tagesschau.mp4
-.trae/
+# --- Secrets / lokale Konfiguration ---
+.env
+.env.*
+!.env.example
+
+# --- Uebergabe-Dokument (laut HANDOFF_TO_CC.md nicht committen) ---
+HANDOFF_TO_CC.md
+
+# --- Python ---
 __pycache__/
-*.log
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# --- Node / Frontend ---
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+*.local
+
+# --- Laufzeit-Storage (KONZEPT §10) ---
+storage/uploads/
+storage/frames/
+
+# --- IDE / Editor ---
+.idea/
+*.swp
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# --- OS ---
+.DS_Store
+Thumbs.db
