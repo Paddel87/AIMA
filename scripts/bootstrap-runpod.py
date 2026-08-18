@@ -5,6 +5,13 @@ Provisionierungs-Logik (Volume -> Template -> Endpoint via RunPod-API,
 Idempotenz, Tear-down, Best-Effort-Rollback) wird in Phase 3 ergaenzt
 (siehe FAHRPLAN Phase 3 und KONZEPT §11.1).
 
+Provisioniert wird ueber die RunPod-Control-Plane, die REST API v2 unter
+``https://api.runpod.io/v2``. Die Vorgaenger sind abgekuendigt und werden
+nicht verwendet: REST v1 (``rest.runpod.io/v1``) antwortet ab 15.11.2026 mit
+``410 Gone``, die GraphQL-API ab Anfang 2027. Nicht zu verwechseln mit der
+Job-API ``https://api.runpod.ai/v2/{ENDPOINT_ID}/…``, die das AIMA-Backend zur
+Laufzeit nutzt und die von dieser Abkuendigung nicht betroffen ist.
+
 Dieses Skript ist ein reines Admin-Werkzeug fuer die Kommandozeile. Es wird
 NIEMALS vom AIMA-Backend zur Laufzeit aufgerufen und hat keinen Trigger
 ueber UI oder API (siehe CLAUDE.md §3, FAHRPLAN Post-MVP-Sperre,
