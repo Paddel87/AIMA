@@ -24,7 +24,8 @@ Bis `v1.0.0` gilt: Jede Phase aus dem [FAHRPLAN](FAHRPLAN.md) entspricht einem M
 
 ### Changed
 
-- (noch nichts)
+- **RunPod-API-Fläche festgelegt (Doku):** KONZEPT §11.1 trennt jetzt explizit die Job-API (`https://api.runpod.ai/v2/{ENDPOINT_ID}/…`, Laufzeit-Pfad des Backends) von der Control-Plane (`https://api.runpod.io/v2`, nur `scripts/bootstrap-runpod.py`).
+- **Phase 3 auf RunPod REST API v2 festgelegt:** Die Provisionierung im Bootstrap-Skript nutzt die REST API v2. REST v1 (`rest.runpod.io/v1`) endet am 15.11.2026 mit `410 Gone`, die GraphQL-API Anfang 2027 — beide werden nicht mehr verwendet (FAHRPLAN Phase 3).
 
 ### Fixed
 
